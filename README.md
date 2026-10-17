@@ -1,6 +1,7 @@
 # Haw Valley Water — SQL Quiz
 
-**Quiz site:** `https://<your-github-username>.github.io/<repo-name>/` ← replace after deploying
+**Quiz site:** `https://<your-github-username>.github.io/IDS706-SQL_Quiz/` 
+
 
 A five-question, 20-point SQL quiz about water main breaks and repairs at a fictional utility, Haw Valley Water. Takers sign in, open a question, write a query, run it against a hosted PostgreSQL database, and see the result table. The data is made up, but shaped like a real utility's records: old cast iron breaks most, breaks cluster in winter, and some breaks are still waiting on a crew.
 

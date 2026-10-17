@@ -1,0 +1,1303 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Haw Valley Water · SQL Quiz</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 3c5 7 9 11.5 9 16.5a9 9 0 0 1-18 0C7 14.5 11 10 16 3z' fill='%231f5fd1'/%3E%3C/svg%3E">
+<style>
+  :root {
+    --bg: #f5f6f8;
+    --surface: #ffffff;
+    --surface-2: #f0f2f5;
+    --border: #dfe3e8;
+    --border-strong: #c3c9d2;
+    --text: #121820;
+    --text-2: #4b5462;
+    --text-3: #687180;
+    --accent: #1f5fd1;
+    --accent-soft: #e9f0fc;
+    --btn-bg: #1f5fd1;
+    --btn-bg-hover: #184ead;
+    --ok: #17784a;
+    --ok-soft: #e7f5ed;
+    --ok-border: #bfe2cd;
+    --on-ok: #ffffff;
+    --warn: #7a4b00;
+    --warn-soft: #fbf4e4;
+    --warn-border: #ecd8ae;
+    --err: #8e1f1f;
+    --err-soft: #fcf3f3;
+    --err-border: #efcaca;
+    --ring: 0 0 0 3px rgba(31, 95, 209, .28);
+    --shadow: 0 1px 2px rgba(16, 24, 40, .05);
+    --radius: 8px;
+    --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    --topbar-h: 56px;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0d1015;
+      --surface: #141920;
+      --surface-2: #1b2129;
+      --border: #29313c;
+      --border-strong: #3b4552;
+      --text: #e7eaef;
+      --text-2: #aab2be;
+      --text-3: #8d96a3;
+      --accent: #7ba6f7;
+      --accent-soft: rgba(123, 166, 247, .13);
+      --btn-bg: #3b6fd9;
+      --btn-bg-hover: #4a7de6;
+      --ok: #55c892;
+      --ok-soft: rgba(85, 200, 146, .12);
+      --ok-border: rgba(85, 200, 146, .35);
+      --on-ok: #0d1015;
+      --warn: #e6b65e;
+      --warn-soft: rgba(230, 182, 94, .10);
+      --warn-border: rgba(230, 182, 94, .32);
+      --err: #f2a7a7;
+      --err-soft: rgba(242, 120, 120, .09);
+      --err-border: rgba(242, 120, 120, .32);
+      --ring: 0 0 0 3px rgba(123, 166, 247, .35);
+      --shadow: none;
+      color-scheme: dark;
+    }
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 15px/1.55 var(--font);
+    -webkit-font-smoothing: antialiased;
+  }
+  button, input, textarea { font: inherit; color: inherit; }
+  code, pre, kbd { font-family: var(--mono); }
+  [hidden] { display: none !important; }
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+  }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .link {
+    padding: 0; border: 0; background: none; cursor: pointer;
+    color: var(--accent); font-weight: 500;
+    text-decoration: underline; text-underline-offset: 2px;
+  }
+
+  /* ---------- Top bar ---------- */
+  .topbar {
+    position: sticky; top: 0; z-index: 20;
+    height: var(--topbar-h);
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    padding: 0 28px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+  .brand {
+    display: flex; align-items: baseline; gap: .45em; min-width: 0;
+    font-size: 15px; white-space: nowrap;
+  }
+  .brand-org { font-weight: 600; letter-spacing: -.005em; }
+  .brand-sep { color: var(--text-3); }
+  .brand-app { color: var(--text-2); }
+  .bar-right { display: flex; align-items: center; gap: 18px; min-width: 0; }
+  .score { display: flex; align-items: baseline; gap: 8px; white-space: nowrap; }
+  .score-label { font-size: 13px; color: var(--text-2); }
+  .score-value { font: 600 15px/1 var(--mono); font-variant-numeric: tabular-nums; }
+  .account {
+    display: flex; align-items: center; gap: 10px; min-width: 0;
+    padding-left: 18px; border-left: 1px solid var(--border);
+  }
+  .account:empty { display: none; }
+  .account-email {
+    min-width: 0; max-width: 280px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    font-size: 14px; color: var(--text-2);
+  }
+
+  /* ---------- Buttons ---------- */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+    height: 36px; padding: 0 16px;
+    border: 1px solid var(--border-strong); border-radius: 7px;
+    background: var(--surface); color: var(--text);
+    font-size: 14px; font-weight: 500; line-height: 1; white-space: nowrap;
+    cursor: pointer;
+    transition: background-color .12s, border-color .12s, box-shadow .12s;
+  }
+  .btn:hover:not(:disabled) { background: var(--surface-2); }
+  .btn:focus-visible { outline: none; box-shadow: var(--ring); }
+  .btn-primary { background: var(--btn-bg); border-color: var(--btn-bg); color: #fff; }
+  .btn-primary:hover:not(:disabled) { background: var(--btn-bg-hover); border-color: var(--btn-bg-hover); }
+  .btn:disabled {
+    background: var(--surface-2); border-color: var(--border); color: var(--text-3);
+    cursor: not-allowed;
+  }
+  .btn-sm { height: 30px; padding: 0 12px; font-size: 13px; }
+  .btn-block { width: 100%; height: 40px; }
+  .btn svg { width: 12px; height: 12px; flex: none; }
+  .icon-btn {
+    display: grid; place-items: center; flex: none;
+    width: 32px; height: 32px; padding: 0;
+    border: 0; border-radius: 6px; background: transparent;
+    color: var(--text-2); font-size: 20px; line-height: 1; cursor: pointer;
+  }
+  .icon-btn:hover { background: var(--surface-2); color: var(--text); }
+  .spinner {
+    width: 12px; height: 12px; flex: none; border-radius: 50%;
+    border: 2px solid currentColor; border-right-color: transparent;
+    animation: spin .7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ---------- Notices ---------- */
+  .flash { max-width: 1480px; margin: 16px auto 0; padding: 0 28px; }
+  .flash-inner {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 10px 8px 10px 14px;
+    border: 1px solid var(--err-border); border-radius: var(--radius);
+    background: var(--err-soft); color: var(--err); font-size: 14px;
+  }
+  .flash-inner span { flex: 1; padding-top: 5px; }
+  .flash-inner .icon-btn { color: inherit; }
+
+  /* ---------- Workspace grid ---------- */
+  .workspace {
+    display: grid;
+    max-width: 1480px; margin: 0 auto;
+    padding: 28px 28px 72px;
+    column-gap: 36px; row-gap: 22px;
+    grid-template-columns: 236px minmax(0, 1fr) 288px;
+    grid-template-rows: auto auto 1fr;
+    grid-template-areas:
+      "nav head   tables"
+      "nav editor tables"
+      "nav output tables";
+  }
+  .workspace.tables-closed { grid-template-columns: 236px minmax(0, 1fr) auto; }
+  .q-head, .q-status { grid-area: head; min-width: 0; }
+  .q-editor { grid-area: editor; min-width: 0; }
+  .q-output { grid-area: output; min-width: 0; display: flex; flex-direction: column; gap: 22px; }
+  .q-head { scroll-margin-top: calc(var(--topbar-h) + 20px); }
+
+  /* ---------- Question list ---------- */
+  .qnav {
+    grid-area: nav; align-self: start;
+    position: sticky; top: calc(var(--topbar-h) + 28px);
+  }
+  .qlist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+  .qbtn {
+    width: 100%;
+    display: grid; grid-template-columns: 12px 14px minmax(0, 1fr) auto;
+    align-items: start; column-gap: 10px;
+    padding: 9px 10px;
+    border: 1px solid transparent; border-radius: 7px; background: transparent;
+    text-align: left; font-size: 14px; line-height: 1.4; cursor: pointer;
+  }
+  .qbtn:hover { background: var(--surface-2); }
+  .qbtn:focus-visible { outline: none; box-shadow: var(--ring); }
+  .qbtn .dot { margin-top: 4px; }
+  .qn-num { font: 500 13px/1.45 var(--mono); color: var(--text-3); }
+  .qn-title { color: var(--text); }
+  .qn-pts { padding-top: 1px; font-size: 12.5px; color: var(--text-3); white-space: nowrap; }
+  .qbtn[aria-current="true"] { background: var(--accent-soft); }
+  .qbtn[aria-current="true"] .qn-title { font-weight: 600; }
+  .qbtn[aria-current="true"] .qn-num { color: var(--accent); }
+  .legend {
+    list-style: none; margin: 18px 0 0; padding: 14px 10px 0;
+    border-top: 1px solid var(--border);
+    display: flex; flex-direction: column; gap: 6px;
+    font-size: 12.5px; color: var(--text-3);
+  }
+  .legend li { display: flex; align-items: center; gap: 10px; }
+  .qlist:empty + .legend { display: none; }
+
+  /* Status dot: hollow = not started, blue = saved, green check = correct */
+  .dot {
+    position: relative; display: inline-block; flex: none;
+    width: 12px; height: 12px; border-radius: 50%;
+    border: 1.5px solid var(--border-strong); background: transparent;
+  }
+  [data-status="saved"] > .dot { background: var(--accent); border-color: var(--accent); }
+  [data-status="correct"] > .dot { background: var(--ok); border-color: var(--ok); }
+  [data-status="correct"] > .dot::after {
+    content: ""; position: absolute; left: 3px; top: 1px;
+    width: 3px; height: 6px;
+    border: solid var(--on-ok); border-width: 0 1.6px 1.6px 0;
+    transform: rotate(45deg);
+  }
+
+  /* ---------- Question header ---------- */
+  .q-status { color: var(--text-2); }
+  .q-status p { margin: 0; }
+  .title-row { display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px 12px; }
+  .q-title { margin: 0; font-size: 22px; line-height: 1.3; font-weight: 650; letter-spacing: -.012em; }
+  .q-num { margin-right: .15em; color: var(--text-3); font-weight: 500; }
+  .q-points {
+    padding: 2px 10px; border: 1px solid var(--border); border-radius: 999px;
+    background: var(--surface-2); color: var(--text-2);
+    font-size: 13px; font-weight: 500; white-space: nowrap;
+  }
+  .q-prompt { margin: 12px 0 0; max-width: 72ch; font-size: 16px; line-height: 1.6; }
+  .q-return { margin: 12px 0 0; font: 13.5px/1.5 var(--mono); overflow-wrap: anywhere; }
+  .q-return-label { color: var(--text-2); }
+
+  /* ---------- Editor ---------- */
+  .editor {
+    display: block; width: 100%; height: 260px; min-height: 160px; margin: 0;
+    padding: 14px 16px;
+    border: 1px solid var(--border-strong); border-radius: var(--radius);
+    background: var(--surface); color: var(--text);
+    font: 14px/1.6 var(--mono); tab-size: 4;
+    white-space: pre; overflow: auto; resize: vertical;
+    box-shadow: var(--shadow);
+  }
+  .editor::placeholder { color: var(--text-3); }
+  .editor:focus { outline: none; border-color: var(--accent); box-shadow: var(--ring); }
+  .editor[readonly] {
+    background: var(--surface-2); border-color: var(--border); color: var(--text-3);
+    box-shadow: none; cursor: not-allowed;
+  }
+  .editor[readonly]:focus { border-color: var(--border-strong); box-shadow: none; }
+  .actions { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+  .save-note { font-size: 13px; color: var(--text-2); }
+  .save-note.is-error { color: var(--err); }
+  .signin-note { display: flex; align-items: center; gap: 7px; margin: 0 0 0 4px; font-size: 14px; color: var(--text-2); }
+  .signin-note svg { width: 14px; height: 14px; flex: none; color: var(--text-3); }
+  .kbd-hint { margin-left: auto; font-size: 12.5px; color: var(--text-3); }
+  kbd {
+    padding: 2px 5px; border: 1px solid var(--border); border-bottom-width: 2px; border-radius: 4px;
+    background: var(--surface); color: var(--text-2); font-size: 11.5px;
+  }
+
+  /* ---------- Result ---------- */
+  .result.is-stale { opacity: .5; }
+  .result-head { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 14px; margin-bottom: 10px; }
+  .row-count { font-size: 13px; color: var(--text-2); font-variant-numeric: tabular-nums; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 11px; border: 1px solid; border-radius: 999px;
+    font-size: 13px; font-weight: 600;
+  }
+  .badge-ok { color: var(--ok); background: var(--ok-soft); border-color: var(--ok-border); }
+  .badge-no { color: var(--warn); background: var(--warn-soft); border-color: var(--warn-border); }
+  .table-wrap {
+    max-height: 420px; overflow: auto;
+    border: 1px solid var(--border); border-radius: var(--radius);
+    background: var(--surface);
+  }
+  .grid {
+    min-width: 100%; border-collapse: separate; border-spacing: 0;
+    font: 13px/1.45 var(--mono); font-variant-numeric: tabular-nums;
+  }
+  .grid th, .grid td {
+    padding: 7px 14px; text-align: left; white-space: pre;
+    border-bottom: 1px solid var(--border);
+  }
+  .grid th { position: sticky; top: 0; z-index: 1; background: var(--surface-2); font-weight: 600; }
+  .grid tbody tr:last-child td { border-bottom: 0; }
+  .grid .num { text-align: right; }
+  .null { color: var(--text-3); font-size: 12px; letter-spacing: .03em; }
+  .error-box {
+    padding: 12px 14px;
+    border: 1px solid var(--err-border); border-radius: var(--radius);
+    background: var(--err-soft); color: var(--err);
+  }
+  .error-label { margin: 0 0 4px; font-size: 13px; font-weight: 600; }
+  .error-msg { margin: 0; font: 13px/1.5 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; }
+  .error-box .btn { margin-top: 10px; }
+
+  /* ---------- Hint ---------- */
+  .hint { border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
+  .hint > summary {
+    display: flex; align-items: center; gap: 8px;
+    padding: 11px 16px; border-radius: var(--radius);
+    list-style: none; cursor: pointer; user-select: none;
+    color: var(--accent); font-size: 14px; font-weight: 500;
+  }
+  .hint > summary::-webkit-details-marker { display: none; }
+  .hint > summary:focus-visible { outline: none; box-shadow: var(--ring); }
+  .hint[open] > summary { border-bottom: 1px solid var(--border); border-radius: var(--radius) var(--radius) 0 0; }
+  .chev { width: 14px; height: 14px; flex: none; transition: transform .15s; }
+  .hint[open] > summary .chev { transform: rotate(90deg); }
+  .hint-body { display: flex; flex-direction: column; gap: 10px; padding: 16px; }
+  .hint-sec { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 30px; }
+  .hint-sec-2 { margin-top: 10px; }
+  .sec-label { font-size: 12px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--text-3); }
+  .code {
+    margin: 0; padding: 14px 16px;
+    border: 1px solid var(--border); border-radius: var(--radius);
+    background: var(--surface-2); color: var(--text);
+    font: 13px/1.6 var(--mono); white-space: pre; overflow: auto;
+  }
+
+  /* ---------- Tables panel ---------- */
+  .tables {
+    grid-area: tables; align-self: start; min-width: 0;
+    position: sticky; top: calc(var(--topbar-h) + 28px);
+    display: flex; flex-direction: column;
+    max-height: calc(100vh - var(--topbar-h) - 56px);
+    border: 1px solid var(--border); border-radius: 10px;
+    background: var(--surface); overflow: hidden;
+  }
+  .tables-h { margin: 0; font-size: inherit; }
+  .tables-toggle {
+    width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 11px 14px; border: 0; background: none; cursor: pointer;
+    font-size: 14px; font-weight: 600; text-align: left;
+  }
+  .tables-toggle:focus-visible { outline: none; box-shadow: inset var(--ring); }
+  .tables-toggle .chev { color: var(--text-3); }
+  .tables-toggle[aria-expanded="true"] .chev { transform: rotate(90deg); }
+  .tables-body { overflow: auto; padding: 0 14px 14px; border-top: 1px solid var(--border); }
+  .tables-note { margin: 12px 0 2px; font-size: 12.5px; color: var(--text-2); }
+  .tables-note code { font-size: 12px; color: var(--text); }
+  .tbl { padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .tbl:last-child { padding-bottom: 0; border-bottom: 0; }
+  .tbl-name { margin: 0 0 6px; font: 600 13px/1.4 var(--mono); }
+  .cols { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px; }
+  .cols li {
+    padding: 0 6px; border: 1px solid var(--border); border-radius: 4px;
+    background: var(--surface-2); color: var(--text-2);
+    font: 12px/1.6 var(--mono);
+  }
+  .tbl-note { margin: 8px 0 0; font-size: 12.5px; line-height: 1.5; color: var(--text-2); }
+
+  /* ---------- Sign-in dialog ---------- */
+  .auth-dialog {
+    width: min(380px, calc(100vw - 32px)); padding: 0;
+    border: 1px solid var(--border); border-radius: 12px;
+    background: var(--surface); color: var(--text);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, .2);
+  }
+  .auth-dialog:focus { outline: none; }
+  .auth-dialog::backdrop { background: rgba(13, 18, 26, .45); }
+  .auth-inner { padding: 18px 20px 22px; }
+  .auth-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+  .seg {
+    display: inline-flex; gap: 2px; padding: 3px;
+    border: 1px solid var(--border); border-radius: 8px; background: var(--surface-2);
+  }
+  .seg button {
+    padding: 6px 12px; border: 0; border-radius: 6px; background: transparent;
+    color: var(--text-2); font-size: 13.5px; font-weight: 500; cursor: pointer;
+  }
+  .seg button[aria-pressed="true"] { background: var(--surface); color: var(--text); box-shadow: 0 1px 2px rgba(0, 0, 0, .1); }
+  .seg button:focus-visible { outline: none; box-shadow: var(--ring); }
+  .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; font-size: 13.5px; font-weight: 500; color: var(--text-2); }
+  .field-hint { font-weight: 400; color: var(--text-3); font-size: 12.5px; }
+  .auth-input {
+    height: 40px; padding: 0 12px;
+    border: 1px solid var(--border-strong); border-radius: 7px;
+    background: var(--surface); color: var(--text); font-size: 15px;
+  }
+  .auth-input:focus { outline: none; border-color: var(--accent); box-shadow: var(--ring); }
+  .auth-msg { margin: 0 0 14px; padding: 9px 12px; border: 1px solid; border-radius: 7px; font-size: 13.5px; }
+  .auth-msg.is-error { color: var(--err); background: var(--err-soft); border-color: var(--err-border); }
+  .auth-msg.is-info { color: var(--text); background: var(--accent-soft); border-color: transparent; }
+
+  /* ---------- Medium screens: tables panel moves under the editor ---------- */
+  @media (min-width: 768px) and (max-width: 1099px) {
+    .workspace, .workspace.tables-closed {
+      padding: 24px 24px 64px; column-gap: 28px;
+      grid-template-columns: 200px minmax(0, 1fr);
+      grid-template-rows: auto auto auto 1fr;
+      grid-template-areas: "nav head" "nav editor" "nav tables" "nav output";
+    }
+    .tables { position: static; max-height: none; }
+  }
+
+  /* ---------- Phones ---------- */
+  @media (max-width: 767px) {
+    .topbar { padding: 0 16px; gap: 12px; }
+    .brand { flex-direction: column; align-items: flex-start; gap: 0; line-height: 1.25; }
+    .brand-org { font-size: 12px; font-weight: 500; color: var(--text-2); }
+    .brand-sep { display: none; }
+    .brand-app { font-size: 15px; font-weight: 600; color: var(--text); }
+    .bar-right { gap: 12px; }
+    .score-label { display: none; }
+    .account { gap: 8px; padding-left: 12px; }
+    .account-email { max-width: 30vw; font-size: 13px; }
+    .flash { padding: 0 16px; }
+    .workspace, .workspace.tables-closed {
+      padding: 0 16px 56px; row-gap: 20px;
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: none;
+      grid-template-areas: "nav" "head" "editor" "tables" "output";
+    }
+    .qnav {
+      top: var(--topbar-h); z-index: 10;
+      margin: 0 -16px; padding: 10px 16px;
+      background: var(--bg); border-bottom: 1px solid var(--border);
+    }
+    .qlist { flex-direction: row; gap: 6px; }
+    .qlist li { flex: 1 1 0; min-width: 0; }
+    .qbtn {
+      display: flex; align-items: center; justify-content: center; gap: 7px;
+      padding: 7px 0; border-color: var(--border); background: var(--surface);
+    }
+    .qbtn .dot { margin-top: 0; }
+    .qn-num { font-size: 14px; color: var(--text); }
+    .qn-title, .qn-pts, .legend { display: none; }
+    .qbtn[aria-current="true"] { border-color: var(--accent); }
+    .q-head { scroll-margin-top: calc(var(--topbar-h) + 70px); }
+    .q-title { font-size: 20px; }
+    .q-prompt { font-size: 15.5px; }
+    .editor { height: 200px; font-size: 16px; }
+    .auth-input { font-size: 16px; }
+    .kbd-hint { display: none; }
+    .tables { position: static; max-height: none; }
+    .table-wrap { max-height: 360px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition: none !important; }
+    .spinner { animation-duration: 2s; }
+  }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-org">Haw Valley Water</span><span class="brand-sep" aria-hidden="true">·</span><span class="brand-app">SQL Quiz</span>
+  </div>
+  <div class="bar-right">
+    <div class="score" id="score-wrap" hidden>
+      <span class="score-label">Score</span>
+      <span class="score-value" id="score" aria-live="polite"></span>
+    </div>
+    <div class="account" id="account"></div>
+  </div>
+</header>
+
+<div class="flash" id="flash" role="alert" hidden>
+  <div class="flash-inner">
+    <span id="flash-text"></span>
+    <button type="button" class="icon-btn" id="flash-close" aria-label="Dismiss">&times;</button>
+  </div>
+</div>
+
+<main class="workspace" id="workspace">
+  <nav class="qnav" aria-label="Questions">
+    <ol class="qlist" id="qlist"></ol>
+    <ul class="legend" aria-hidden="true">
+      <li data-status="none"><span class="dot"></span>Not started</li>
+      <li data-status="saved"><span class="dot"></span>Saved</li>
+      <li data-status="correct"><span class="dot"></span>Correct</li>
+    </ul>
+  </nav>
+
+  <div class="q-status" id="q-status" role="status">
+    <p>Loading questions…</p>
+    <noscript><p>This quiz needs JavaScript.</p></noscript>
+  </div>
+
+  <section class="q-head" id="q-head" aria-labelledby="q-title" hidden>
+    <div class="title-row">
+      <h1 class="q-title" id="q-title"><span class="q-num" id="q-num"></span> <span id="q-title-text"></span></h1>
+      <span class="q-points" id="q-points"></span>
+    </div>
+    <p class="q-prompt" id="q-prompt"></p>
+    <p class="q-return"><span class="q-return-label">Return:</span> <span id="q-return"></span></p>
+  </section>
+
+  <section class="q-editor" id="q-editor" aria-label="Your query" hidden>
+    <label for="editor" class="sr-only">SQL query</label>
+    <textarea id="editor" class="editor" readonly spellcheck="false" autocapitalize="off"
+      autocomplete="off" autocorrect="off" wrap="off" maxlength="4000"
+      aria-describedby="signin-note"></textarea>
+    <div class="actions">
+      <button type="button" class="btn btn-primary" id="run" disabled>
+        <svg id="run-icon" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 1.5v9l7.5-4.5z" fill="currentColor"/></svg>
+        <span id="run-label">Run</span>
+      </button>
+      <button type="button" class="btn" id="save" disabled>Save</button>
+      <span class="save-note" id="save-note" aria-live="polite"></span>
+      <p class="signin-note" id="signin-note" hidden>
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 1a3.5 3.5 0 0 0-3.5 3.5V6H4a1.5 1.5 0 0 0-1.5 1.5v6A1.5 1.5 0 0 0 4 15h8a1.5 1.5 0 0 0 1.5-1.5v-6A1.5 1.5 0 0 0 12 6h-.5V4.5A3.5 3.5 0 0 0 8 1zm2 5H6V4.5a2 2 0 1 1 4 0V6z"/></svg>
+        <span><button type="button" class="link" id="signin-link">Sign in</button> to run and save queries.</span>
+      </p>
+      <span class="kbd-hint" id="kbd-hint" hidden></span>
+    </div>
+  </section>
+
+  <aside class="tables" id="tables" aria-labelledby="tables-toggle">
+    <h2 class="tables-h">
+      <button type="button" class="tables-toggle" id="tables-toggle" aria-expanded="true" aria-controls="tables-body">
+        <span>Tables</span>
+        <svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </h2>
+    <div class="tables-body" id="tables-body">
+      <p class="tables-note">Schema <code>quiz</code>. <code>mains</code> and <code>quiz.mains</code> both work.</p>
+      <section class="tbl">
+        <h3 class="tbl-name">pressure_zones</h3>
+        <ul class="cols"><li>zone_id</li><li>zone_name</li></ul>
+      </section>
+      <section class="tbl">
+        <h3 class="tbl-name">mains</h3>
+        <ul class="cols"><li>main_id</li><li>zone_id</li><li>material</li><li>diameter_in</li><li>length_ft</li><li>install_year</li></ul>
+      </section>
+      <section class="tbl">
+        <h3 class="tbl-name">crews</h3>
+        <ul class="cols"><li>crew_id</li><li>crew_name</li><li>shift</li></ul>
+      </section>
+      <section class="tbl">
+        <h3 class="tbl-name">breaks</h3>
+        <ul class="cols"><li>break_id</li><li>main_id</li><li>reported_at</li><li>break_type</li><li>cause</li><li>est_loss_gal</li></ul>
+      </section>
+      <section class="tbl">
+        <h3 class="tbl-name">repairs</h3>
+        <ul class="cols"><li>repair_id</li><li>break_id</li><li>crew_id</li><li>started_at</li><li>completed_at</li><li>repair_method</li><li>cost_usd</li></ul>
+        <p class="tbl-note">No row = no crew assigned yet. Empty completed_at = still in progress.</p>
+      </section>
+    </div>
+  </aside>
+
+  <section class="q-output" id="q-output" hidden>
+    <div class="result" id="result" hidden></div>
+    <details class="hint" id="hint">
+      <summary>
+        <svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span id="hint-summary">Show hint</span>
+      </summary>
+      <div class="hint-body">
+        <div class="hint-sec">
+          <span class="sec-label">Expected SQL</span>
+          <button type="button" class="btn btn-sm" id="hint-copy">Copy</button>
+        </div>
+        <pre class="code" id="hint-sql"></pre>
+        <div class="hint-sec hint-sec-2">
+          <span class="sec-label">Expected result</span>
+          <span class="row-count" id="hint-rows"></span>
+        </div>
+        <div class="table-wrap" id="hint-table" tabindex="0" role="region" aria-label="Expected result"></div>
+      </div>
+    </details>
+  </section>
+
+  <div class="sr-only" id="sr-status" aria-live="polite"></div>
+</main>
+
+<dialog class="auth-dialog" id="auth-dialog" aria-label="Sign in">
+  <form class="auth-inner" id="auth-form" novalidate>
+    <div class="auth-top">
+      <div class="seg" role="group" aria-label="Account">
+        <button type="button" id="mode-signin" aria-pressed="true">Sign in</button>
+        <button type="button" id="mode-signup" aria-pressed="false">Create account</button>
+      </div>
+      <button type="button" class="icon-btn" id="auth-close" aria-label="Close">&times;</button>
+    </div>
+    <label class="field">Email
+      <input class="auth-input" id="auth-email" type="email" autocomplete="email" required>
+    </label>
+    <label class="field">
+      <span>Password <span class="field-hint" id="auth-pw-hint" hidden>· at least 6 characters</span></span>
+      <input class="auth-input" id="auth-password" type="password" autocomplete="current-password" required>
+    </label>
+    <p class="auth-msg" id="auth-msg" role="alert" hidden></p>
+    <button type="submit" class="btn btn-primary btn-block" id="auth-submit">Sign in</button>
+  </form>
+</dialog>
+
+<script type="module">
+const SUPABASE_URL = "https://YOUR-PROJECT.supabase.co";
+const SUPABASE_ANON_KEY = "YOUR-ANON-OR-PUBLISHABLE-KEY";
+
+// ---------------------------------------------------------------------------
+// Everything below talks to Supabase only through supabase-js and the
+// "run-sql" Edge Function. Values from the database and from taker SQL are
+// always rendered with textContent, never as HTML.
+// ---------------------------------------------------------------------------
+
+const $ = (id) => document.getElementById(id);
+const els = {
+  workspace: $("workspace"),
+  scoreWrap: $("score-wrap"), score: $("score"), account: $("account"),
+  flash: $("flash"), flashText: $("flash-text"), flashClose: $("flash-close"),
+  status: $("q-status"), head: $("q-head"), editorSec: $("q-editor"), output: $("q-output"),
+  qlist: $("qlist"),
+  qNum: $("q-num"), qTitle: $("q-title-text"), qPoints: $("q-points"),
+  qPrompt: $("q-prompt"), qReturn: $("q-return"),
+  editor: $("editor"),
+  run: $("run"), runIcon: $("run-icon"), runLabel: $("run-label"),
+  save: $("save"), saveNote: $("save-note"),
+  signinNote: $("signin-note"), signinLink: $("signin-link"), kbdHint: $("kbd-hint"),
+  result: $("result"), srStatus: $("sr-status"),
+  hint: $("hint"), hintSummary: $("hint-summary"), hintSql: $("hint-sql"),
+  hintCopy: $("hint-copy"), hintRows: $("hint-rows"), hintTable: $("hint-table"),
+  tablesToggle: $("tables-toggle"), tablesBody: $("tables-body"),
+  dialog: $("auth-dialog"), authForm: $("auth-form"),
+  modeSignin: $("mode-signin"), modeSignup: $("mode-signup"), authClose: $("auth-close"),
+  authEmail: $("auth-email"), authPassword: $("auth-password"), authPwHint: $("auth-pw-hint"),
+  authMsg: $("auth-msg"), authSubmit: $("auth-submit"),
+};
+
+const IS_MAC = /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent);
+const STATUS_TEXT = { none: "Not started", saved: "Saved", correct: "Correct" };
+const TABLES_KEY = "hvw-sql-quiz.tables-open";
+
+const state = {
+  questions: [],
+  currentId: null,
+  authReady: false,   // false until Supabase reports the initial session
+  session: null,
+  userId: null,
+  epoch: 0,           // bumps on sign-in/out so late replies for the old user are dropped
+  drafts: {},         // question id -> editor text
+  saved: {},          // question id -> last saved sql_text
+  savedAt: {},        // question id -> Date of a save made in this session
+  saving: {},
+  saveError: {},
+  running: {},
+  results: {},        // question id -> { data } | { error }
+  correct: {},        // question id -> true if the latest Run matched
+};
+const navButtons = new Map();
+
+let supabase = null;
+
+// ---------- small helpers ----------
+function el(tag, cls, text) {
+  const n = document.createElement(tag);
+  if (cls) n.className = cls;
+  if (text != null) n.textContent = text;
+  return n;
+}
+const ptsLabel = (n) => `${n} ${n === 1 ? "pt" : "pts"}`;
+const rowsLabel = (n) => `${n} ${n === 1 ? "row" : "rows"}`;
+const timeFmt = new Intl.DateTimeFormat("en-US", { hour: "numeric", minute: "2-digit" });
+const fmtTime = (d) => timeFmt.format(d).replace(/\s/g, " ").toLowerCase();
+const currentQuestion = () => state.questions.find((q) => q.id === state.currentId) || null;
+
+function cellText(v) {
+  return typeof v === "object" ? JSON.stringify(v) : String(v);
+}
+
+function buildTable(columns, rows) {
+  const numeric = columns.map((_, c) => {
+    let any = false;
+    for (const r of rows) {
+      const v = r[c];
+      if (v === null || v === undefined) continue;
+      if (typeof v !== "number") return false;
+      any = true;
+    }
+    return any;
+  });
+  const table = el("table", "grid");
+  const thead = el("thead");
+  const htr = el("tr");
+  columns.forEach((name, c) => {
+    const th = el("th", numeric[c] ? "num" : "", String(name));
+    th.scope = "col";
+    htr.append(th);
+  });
+  thead.append(htr);
+  const tbody = el("tbody");
+  for (const row of rows) {
+    const tr = el("tr");
+    for (let c = 0; c < columns.length; c++) {
+      const v = row[c];
+      const td = el("td", numeric[c] ? "num" : "");
+      if (v === null || v === undefined) td.append(el("span", "null", "NULL"));
+      else td.textContent = cellText(v);
+      tr.append(td);
+    }
+    tbody.append(tr);
+  }
+  table.append(thead, tbody);
+  return table;
+}
+
+function parseHintResult(v) {
+  if (typeof v === "string") {
+    try { v = JSON.parse(v); } catch { return null; }
+  }
+  return v && Array.isArray(v.columns) && Array.isArray(v.rows) ? v : null;
+}
+
+function showFlash(message) {
+  els.flashText.textContent = message;
+  els.flash.hidden = false;
+}
+
+function showStatus(kind, message) {
+  const ready = kind === null;
+  els.head.hidden = els.editorSec.hidden = els.output.hidden = !ready;
+  els.status.hidden = ready;
+  els.status.replaceChildren();
+  if (kind === "loading") {
+    els.status.append(el("p", "", "Loading questions…"));
+  } else if (kind === "setup") {
+    els.status.append(el("p", "",
+      "Setup needed: paste your Supabase project URL and anon (publishable) key into " +
+      "SUPABASE_URL and SUPABASE_ANON_KEY at the top of the script in index.html."));
+  } else if (kind === "empty") {
+    els.status.append(el("p", "", "No questions found."));
+  } else if (kind === "error") {
+    const box = el("div", "error-box");
+    box.append(el("p", "error-label", "Couldn't load the questions."), el("p", "error-msg", message));
+    if (supabase) {
+      const retry = el("button", "btn btn-sm", "Try again");
+      retry.type = "button";
+      retry.addEventListener("click", loadQuestions);
+      box.append(retry);
+    }
+    els.status.append(box);
+  }
+}
+
+// ---------- questions ----------
+async function loadQuestions() {
+  showStatus("loading");
+  let res;
+  try {
+    res = await supabase
+      .from("questions")
+      .select("id,title,prompt,output_columns,points,hint_sql,hint_result")
+      .order("id");
+  } catch (e) {
+    res = { error: e };
+  }
+  if (res.error) {
+    showStatus("error", res.error.message || String(res.error));
+    return;
+  }
+  state.questions = (res.data || []).map((q) => ({ ...q, hint_result: parseHintResult(q.hint_result) }));
+  if (!state.questions.length) {
+    showStatus("empty");
+    return;
+  }
+  buildNav();
+  showStatus(null);
+  selectQuestion(idFromHash() ?? state.questions[0].id, { scroll: false });
+  renderScore();
+}
+
+function buildNav() {
+  navButtons.clear();
+  els.qlist.replaceChildren();
+  state.questions.forEach((q, i) => {
+    const li = el("li");
+    const b = el("button", "qbtn");
+    b.type = "button";
+    b.append(el("span", "dot"), el("span", "qn-num", String(i + 1)), el("span", "qn-title", q.title), el("span", "qn-pts", ptsLabel(q.points)));
+    b.querySelector(".dot").setAttribute("aria-hidden", "true");
+    b.addEventListener("click", () => selectQuestion(q.id));
+    navButtons.set(q.id, b);
+    li.append(b);
+    els.qlist.append(li);
+  });
+  renderNav();
+}
+
+function statusOf(id) {
+  if (state.correct[id]) return "correct";
+  if (state.saved[id] != null) return "saved";
+  return "none";
+}
+
+function renderNav() {
+  state.questions.forEach((q, i) => {
+    const b = navButtons.get(q.id);
+    if (!b) return;
+    const s = statusOf(q.id);
+    b.dataset.status = s;
+    b.setAttribute("aria-current", q.id === state.currentId ? "true" : "false");
+    b.setAttribute("aria-label", `Question ${i + 1}: ${q.title}, ${ptsLabel(q.points)}, ${STATUS_TEXT[s].toLowerCase()}`);
+    b.title = STATUS_TEXT[s];
+  });
+}
+
+function idFromHash() {
+  const m = location.hash.match(/^#q(\d+)$/);
+  if (!m) return null;
+  const id = Number(m[1]);
+  return state.questions.some((q) => q.id === id) ? id : null;
+}
+
+function selectQuestion(id, { scroll = true } = {}) {
+  const index = state.questions.findIndex((q) => q.id === id);
+  const q = state.questions[index];
+  if (!q) return;
+  state.currentId = q.id;
+  if (location.hash !== `#q${q.id}`) history.replaceState(null, "", `#q${q.id}`);
+
+  els.qNum.textContent = String(index + 1);
+  els.qTitle.textContent = q.title;
+  els.qPoints.textContent = ptsLabel(q.points);
+  els.qPrompt.textContent = q.prompt;
+  els.qReturn.textContent = q.output_columns;
+
+  els.editor.value = state.drafts[q.id] ?? "";
+  els.editor.scrollTop = 0;
+  els.editor.scrollLeft = 0;
+
+  els.hint.open = false;
+  els.hintSql.textContent = q.hint_sql || "";
+  els.hintTable.replaceChildren();
+  if (q.hint_result) {
+    els.hintRows.textContent = rowsLabel(q.hint_result.rows.length);
+    els.hintTable.append(buildTable(q.hint_result.columns, q.hint_result.rows));
+    els.hintTable.hidden = false;
+  } else {
+    els.hintRows.textContent = "";
+    els.hintTable.hidden = true;
+  }
+  els.srStatus.textContent = "";
+
+  renderNav();
+  renderControls();
+  renderResult();
+
+  if (scroll && els.head.getBoundingClientRect().top < 0) {
+    els.head.scrollIntoView({ block: "start" });
+  }
+}
+
+// ---------- rendering ----------
+function renderScore() {
+  if (!state.questions.length) { els.scoreWrap.hidden = true; return; }
+  let got = 0, total = 0;
+  for (const q of state.questions) {
+    total += q.points;
+    if (state.correct[q.id]) got += q.points;
+  }
+  els.score.textContent = `${got} / ${total}`;
+  els.scoreWrap.hidden = false;
+}
+
+function renderAccount() {
+  const a = els.account;
+  a.replaceChildren();
+  if (!supabase || !state.authReady) return;
+  if (state.session) {
+    const email = state.session.user.email || "Signed in";
+    const span = el("span", "account-email", email);
+    span.title = email;
+    const out = el("button", "btn btn-sm", "Sign out");
+    out.type = "button";
+    out.addEventListener("click", () => signOut(out));
+    a.append(span, out);
+  } else {
+    const inBtn = el("button", "btn btn-sm btn-primary", "Sign in");
+    inBtn.type = "button";
+    inBtn.addEventListener("click", () => openAuth("signin"));
+    a.append(inBtn);
+  }
+}
+
+function renderControls() {
+  const id = state.currentId;
+  const signedIn = !!state.session;
+  const running = !!state.running[id];
+  const saving = !!state.saving[id];
+
+  els.editor.readOnly = !signedIn;
+  els.editor.placeholder = signedIn ? "SELECT …" : state.authReady ? "Sign in to write a query." : "";
+
+  els.run.disabled = !signedIn || running;
+  els.runLabel.textContent = running ? "Running…" : "Run";
+  els.runIcon.hidden = running;
+  const spin = els.run.querySelector(".spinner");
+  if (running && !spin) els.run.prepend(el("span", "spinner"));
+  if (!running && spin) spin.remove();
+
+  els.save.disabled = !signedIn || saving;
+  els.signinNote.hidden = !state.authReady || signedIn || !supabase;
+  els.kbdHint.hidden = !signedIn;
+  renderSaveNote();
+}
+
+function renderSaveNote() {
+  const id = state.currentId;
+  let text = "", isError = false;
+  if (state.session && id != null) {
+    const saved = state.saved[id];
+    const draft = state.drafts[id] ?? "";
+    if (state.saving[id]) text = "Saving…";
+    else if (state.saveError[id]) { text = `Couldn't save: ${state.saveError[id]}`; isError = true; }
+    else if (saved != null && draft !== saved) text = "Unsaved changes";
+    else if (saved != null && state.savedAt[id]) text = `Saved ${fmtTime(state.savedAt[id])}`;
+    else if (saved != null) text = "Saved";
+  }
+  els.saveNote.textContent = text;
+  els.saveNote.classList.toggle("is-error", isError);
+}
+
+function renderResult() {
+  const box = els.result;
+  const id = state.currentId;
+  const r = state.results[id];
+  box.replaceChildren();
+  box.classList.toggle("is-stale", !!state.running[id]);
+  box.setAttribute("aria-busy", state.running[id] ? "true" : "false");
+  if (!state.session || !r) { box.hidden = true; return; }
+  box.hidden = false;
+
+  if (r.error != null) {
+    const err = el("div", "error-box");
+    err.setAttribute("role", "alert");
+    err.append(el("p", "error-label", "Error"), el("pre", "error-msg", r.error));
+    box.append(err);
+    return;
+  }
+
+  const d = r.data;
+  const head = el("div", "result-head");
+  head.append(el("span", "row-count", rowsLabel(d.rows.length)));
+  if (d.correct === true) head.append(el("span", "badge badge-ok", "✓ Matches the answer key"));
+  else if (d.correct === false) head.append(el("span", "badge badge-no", "Not a match yet"));
+  if (d.truncated) head.append(el("span", "row-count", "Showing first 500 rows."));
+  const wrap = el("div", "table-wrap");
+  wrap.tabIndex = 0;
+  wrap.setAttribute("role", "region");
+  wrap.setAttribute("aria-label", "Query result");
+  wrap.append(buildTable(d.columns, d.rows));
+  box.append(head, wrap);
+}
+
+function renderAll() {
+  renderAccount();
+  renderControls();
+  renderNav();
+  renderResult();
+  renderScore();
+}
+
+// ---------- auth ----------
+function applySession(session) {
+  const uid = session?.user?.id ?? null;
+  state.session = session ?? null;
+  state.authReady = true;
+  if (uid !== state.userId) {
+    state.userId = uid;
+    resetUserData();
+    els.editor.value = "";
+    if (uid) loadAnswers(uid);
+  }
+  renderAll();
+}
+
+function resetUserData() {
+  state.epoch++;
+  for (const key of ["drafts", "saved", "savedAt", "saving", "saveError", "running", "results", "correct"]) {
+    state[key] = {};
+  }
+  els.srStatus.textContent = "";
+}
+
+async function loadAnswers(uid) {
+  let res;
+  try {
+    res = await supabase.from("answers").select("question_id,sql_text");
+  } catch (e) {
+    res = { error: e };
+  }
+  if (state.userId !== uid) return;
+  if (res.error) {
+    showFlash(`Couldn't load your saved answers: ${res.error.message || res.error}`);
+    return;
+  }
+  for (const a of res.data || []) {
+    state.saved[a.question_id] = a.sql_text;
+    if (!state.drafts[a.question_id]) state.drafts[a.question_id] = a.sql_text;
+  }
+  const id = state.currentId;
+  if (id != null && els.editor.value === "" && state.drafts[id]) els.editor.value = state.drafts[id];
+  renderNav();
+  renderControls();
+}
+
+async function signOut(button) {
+  button.disabled = true;
+  const { error } = await supabase.auth.signOut();
+  if (error) {
+    button.disabled = false;
+    showFlash(`Couldn't sign out: ${error.message}`);
+  }
+}
+
+let authMode = "signin";
+
+function setAuthMode(mode) {
+  authMode = mode;
+  const signup = mode === "signup";
+  els.modeSignin.setAttribute("aria-pressed", String(!signup));
+  els.modeSignup.setAttribute("aria-pressed", String(signup));
+  els.authSubmit.textContent = signup ? "Create account" : "Sign in";
+  els.authPassword.autocomplete = signup ? "new-password" : "current-password";
+  els.authPwHint.hidden = !signup;
+  els.dialog.setAttribute("aria-label", signup ? "Create account" : "Sign in");
+  els.authMsg.hidden = true;
+}
+
+function showAuthMsg(text, kind) {
+  els.authMsg.textContent = text;
+  els.authMsg.className = `auth-msg is-${kind}`;
+  els.authMsg.hidden = false;
+}
+
+function openAuth(mode) {
+  if (!supabase) return;
+  setAuthMode(mode);
+  els.authPassword.value = "";
+  els.dialog.showModal();
+  els.authEmail.focus();
+}
+
+async function submitAuth(e) {
+  e.preventDefault();
+  const email = els.authEmail.value.trim();
+  const password = els.authPassword.value;
+  if (!email || !password) {
+    showAuthMsg("Enter your email and password.", "error");
+    return;
+  }
+  const signup = authMode === "signup";
+  els.authSubmit.disabled = true;
+  els.authSubmit.textContent = signup ? "Creating account…" : "Signing in…";
+  els.authMsg.hidden = true;
+  try {
+    if (signup) {
+      const { data, error } = await supabase.auth.signUp({ email, password });
+      if (error) throw error;
+      if (data.session) {
+        els.dialog.close();
+      } else {
+        setAuthMode("signin");
+        els.authPassword.value = "";
+        showAuthMsg("Account created. Check your email to confirm it, then sign in.", "info");
+      }
+    } else {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      els.dialog.close();
+    }
+  } catch (err) {
+    showAuthMsg(err?.message || String(err), "error");
+  } finally {
+    els.authSubmit.disabled = false;
+    els.authSubmit.textContent = authMode === "signup" ? "Create account" : "Sign in";
+  }
+}
+
+// ---------- run & save ----------
+async function invokeErrorMessage(error) {
+  try {
+    const ctx = error.context;
+    if (ctx && typeof ctx.json === "function") {
+      const body = await ctx.json();
+      if (body && body.error) return String(body.error);
+    }
+  } catch {
+    // Not a JSON reply (network or CORS failure): fall back to the client's message.
+  }
+  return error?.message || "Something went wrong running the query.";
+}
+
+function setResult(id, outcome) {
+  state.results[id] = outcome;
+  state.correct[id] = outcome.data?.correct === true;
+  if (outcome.error != null) {
+    els.srStatus.textContent = `Error: ${outcome.error}`;
+  } else {
+    const c = outcome.data.correct;
+    els.srStatus.textContent = `${rowsLabel(outcome.data.rows.length)}.` +
+      (c === true ? " Matches the answer key." : c === false ? " Not a match yet." : "");
+  }
+  renderControls();
+  renderResult();
+  renderNav();
+  renderScore();
+}
+
+async function runQuery() {
+  const q = currentQuestion();
+  if (!q || !state.session || state.running[q.id]) return;
+  const id = q.id;
+  const epoch = state.epoch;
+  const sql = els.editor.value;
+  if (!sql.trim()) {
+    setResult(id, { error: "Enter a query." });
+    return;
+  }
+  state.running[id] = true;
+  renderControls();
+  renderResult();
+
+  let outcome;
+  try {
+    const { data, error } = await supabase.functions.invoke("run-sql", { body: { sql, question_id: id } });
+    if (error) outcome = { error: await invokeErrorMessage(error) };
+    else if (!data || !Array.isArray(data.columns) || !Array.isArray(data.rows)) outcome = { error: "Unexpected reply from run-sql." };
+    else outcome = { data };
+  } catch (e) {
+    outcome = { error: e?.message || String(e) };
+  }
+  if (epoch !== state.epoch) return;
+  state.running[id] = false;
+  setResult(id, outcome);
+}
+
+async function saveAnswer() {
+  const q = currentQuestion();
+  if (!q || !state.session || state.saving[q.id]) return;
+  const id = q.id;
+  const epoch = state.epoch;
+  const sql_text = els.editor.value;
+  state.saving[id] = true;
+  delete state.saveError[id];
+  renderControls();
+
+  let error = null;
+  try {
+    const res = await supabase
+      .from("answers")
+      .upsert({ user_id: state.session.user.id, question_id: id, sql_text }, { onConflict: "user_id,question_id" });
+    error = res.error;
+  } catch (e) {
+    error = e;
+  }
+  if (epoch !== state.epoch) return;
+  state.saving[id] = false;
+  if (error) {
+    state.saveError[id] = error.message || String(error);
+  } else {
+    state.saved[id] = sql_text;
+    state.savedAt[id] = new Date();
+  }
+  renderControls();
+  renderNav();
+}
+
+// ---------- copy ----------
+async function copyText(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    const ta = el("textarea");
+    ta.value = text;
+    ta.setAttribute("readonly", "");
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.append(ta);
+    ta.select();
+    let ok = false;
+    try { ok = document.execCommand("copy"); } catch { ok = false; }
+    ta.remove();
+    return ok;
+  }
+}
+
+// ---------- tables panel ----------
+function setTablesOpen(open) {
+  els.tablesToggle.setAttribute("aria-expanded", String(open));
+  els.tablesBody.hidden = !open;
+  els.workspace.classList.toggle("tables-closed", !open);
+}
+
+function initTablesPanel() {
+  let open = window.matchMedia("(min-width: 1100px)").matches;
+  try {
+    const stored = localStorage.getItem(TABLES_KEY);
+    if (stored === "1") open = true;
+    else if (stored === "0") open = false;
+  } catch {
+    // Storage blocked: fall back to the screen-size default.
+  }
+  setTablesOpen(open);
+  els.tablesToggle.addEventListener("click", () => {
+    const next = els.tablesToggle.getAttribute("aria-expanded") !== "true";
+    setTablesOpen(next);
+    try { localStorage.setItem(TABLES_KEY, next ? "1" : "0"); } catch { /* ignore */ }
+  });
+}
+
+// ---------- events ----------
+function wireEvents() {
+  els.kbdHint.replaceChildren(el("kbd", "", IS_MAC ? "⌘" : "Ctrl"), " ", el("kbd", "", "Enter"), " to run");
+
+  els.editor.addEventListener("input", () => {
+    const id = state.currentId;
+    if (id == null || !state.session) return;
+    state.drafts[id] = els.editor.value;
+    delete state.saveError[id];
+    renderSaveNote();
+  });
+  els.editor.addEventListener("keydown", (e) => {
+    const mod = e.ctrlKey || e.metaKey;
+    if (mod && e.key === "Enter") { e.preventDefault(); runQuery(); }
+    else if (mod && (e.key === "s" || e.key === "S")) { e.preventDefault(); saveAnswer(); }
+  });
+  els.run.addEventListener("click", runQuery);
+  els.save.addEventListener("click", saveAnswer);
+  els.save.title = `Save (${IS_MAC ? "⌘" : "Ctrl"}+S)`;
+  els.signinLink.addEventListener("click", () => openAuth("signin"));
+
+  els.hint.addEventListener("toggle", () => {
+    els.hintSummary.textContent = els.hint.open ? "Hide hint" : "Show hint";
+  });
+  els.hintCopy.addEventListener("click", async () => {
+    const ok = await copyText(els.hintSql.textContent);
+    els.hintCopy.textContent = ok ? "Copied" : "Copy failed";
+    setTimeout(() => { els.hintCopy.textContent = "Copy"; }, 1500);
+  });
+
+  els.flashClose.addEventListener("click", () => { els.flash.hidden = true; });
+
+  els.modeSignin.addEventListener("click", () => setAuthMode("signin"));
+  els.modeSignup.addEventListener("click", () => setAuthMode("signup"));
+  els.authClose.addEventListener("click", () => els.dialog.close());
+  els.authForm.addEventListener("submit", submitAuth);
+  let downOnBackdrop = false;
+  els.dialog.addEventListener("mousedown", (e) => { downOnBackdrop = e.target === els.dialog; });
+  els.dialog.addEventListener("click", (e) => {
+    if (downOnBackdrop && e.target === els.dialog) els.dialog.close();
+  });
+
+  window.addEventListener("hashchange", () => {
+    const id = idFromHash();
+    if (id != null && id !== state.currentId) selectQuestion(id);
+  });
+  window.addEventListener("beforeunload", (e) => {
+    if (!state.session) return;
+    const dirty = state.questions.some((q) => {
+      const d = state.drafts[q.id];
+      return d && d !== (state.saved[q.id] ?? "");
+    });
+    if (dirty) { e.preventDefault(); e.returnValue = ""; }
+  });
+}
+
+// ---------- start ----------
+initTablesPanel();
+wireEvents();
+
+const configured = !SUPABASE_URL.includes("YOUR-PROJECT") && !SUPABASE_ANON_KEY.startsWith("YOUR-");
+if (!configured) {
+  showStatus("setup");
+} else if (!window.supabase || typeof window.supabase.createClient !== "function") {
+  showStatus("error", "The Supabase library didn't load. Check your connection and reload the page.");
+} else {
+  supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  // Defer work out of the callback: awaiting Supabase calls inside it can deadlock.
+  supabase.auth.onAuthStateChange((_event, session) => {
+    setTimeout(() => applySession(session), 0);
+  });
+  loadQuestions();
+}
+</script>
+</body>
+</html>
