@@ -4,35 +4,57 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#0f2c4c">
 <title>Haw Valley Water · SQL Quiz</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 3c5 7 9 11.5 9 16.5a9 9 0 0 1-18 0C7 14.5 11 10 16 3z' fill='%231f5fd1'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 3c5 7 9 11.5 9 16.5a9 9 0 0 1-18 0C7 14.5 11 10 16 3z' fill='%230c7a83'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.css">
 <style>
   :root {
-    --bg: #f5f6f8;
+    --bg: #e8eef4;
     --surface: #ffffff;
-    --surface-2: #f0f2f5;
-    --border: #dfe3e8;
-    --border-strong: #c3c9d2;
-    --text: #121820;
-    --text-2: #4b5462;
-    --text-3: #687180;
-    --accent: #1f5fd1;
-    --accent-soft: #e9f0fc;
-    --btn-bg: #1f5fd1;
-    --btn-bg-hover: #184ead;
-    --ok: #17784a;
-    --ok-soft: #e7f5ed;
-    --ok-border: #bfe2cd;
+    --surface-2: #f2f5f9;
+    --zebra: #f5f8fb;
+    --nav-hover: rgba(255, 255, 255, .6);
+    --border: #d5dee8;
+    --border-strong: #b6c3d2;
+    --text: #0f1b2a;
+    --text-2: #455468;
+    --text-3: #5b6a7f;
+    --topbar: #0f2c4c;
+    --topbar-muted: rgba(255, 255, 255, .72);
+    --topbar-line: rgba(255, 255, 255, .18);
+    --thead: #1b3a5e;
+    --tbl-name: #1b3a5e;
+    --primary: #0c7a83;
+    --primary-hover: #09646c;
+    --primary-soft: #dff1f2;
+    --primary-text: #08636b;
+    --saved: #d4860b;
+    --ok: #16794a;
+    --ok-dot: #1d9156;
+    --ok-soft: #e3f4ea;
+    --ok-border: #b5dec5;
     --on-ok: #ffffff;
-    --warn: #7a4b00;
-    --warn-soft: #fbf4e4;
-    --warn-border: #ecd8ae;
+    --warn: #7a4a00;
+    --warn-soft: #fff3d9;
+    --warn-border: #f0d394;
     --err: #8e1f1f;
     --err-soft: #fcf3f3;
     --err-border: #efcaca;
-    --ring: 0 0 0 3px rgba(31, 95, 209, .28);
-    --shadow: 0 1px 2px rgba(16, 24, 40, .05);
+    --ring: 0 0 0 3px rgba(12, 122, 131, .3);
+    --sel: rgba(12, 122, 131, .18);
+    --shadow: 0 1px 2px rgba(15, 35, 60, .05);
+    --shadow-card: 0 1px 2px rgba(15, 35, 60, .06), 0 2px 6px rgba(15, 35, 60, .04);
+    --syn-keyword: #1d4f9a;
+    --syn-builtin: #7b3fa8;
+    --syn-string: #a3461a;
+    --syn-number: #0a7079;
+    --syn-atom: #a65300;
+    --syn-comment: #6b7a8e;
+    --syn-operator: #455468;
     --radius: 8px;
+    --card-radius: 12px;
     --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
     --topbar-h: 56px;
@@ -40,30 +62,47 @@
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #0d1015;
-      --surface: #141920;
-      --surface-2: #1b2129;
-      --border: #29313c;
-      --border-strong: #3b4552;
-      --text: #e7eaef;
-      --text-2: #aab2be;
-      --text-3: #8d96a3;
-      --accent: #7ba6f7;
-      --accent-soft: rgba(123, 166, 247, .13);
-      --btn-bg: #3b6fd9;
-      --btn-bg-hover: #4a7de6;
-      --ok: #55c892;
-      --ok-soft: rgba(85, 200, 146, .12);
-      --ok-border: rgba(85, 200, 146, .35);
-      --on-ok: #0d1015;
-      --warn: #e6b65e;
-      --warn-soft: rgba(230, 182, 94, .10);
-      --warn-border: rgba(230, 182, 94, .32);
+      --bg: #0a131d;
+      --surface: #111d2a;
+      --surface-2: #172636;
+      --zebra: #142231;
+      --nav-hover: rgba(255, 255, 255, .04);
+      --border: #233447;
+      --border-strong: #34495f;
+      --text: #e5ecf4;
+      --text-2: #a9b6c6;
+      --text-3: #8695a8;
+      --topbar: #0e2846;
+      --topbar-line: rgba(255, 255, 255, .12);
+      --thead: #1d3a5c;
+      --tbl-name: #9cc3ff;
+      --primary: #0c7a83;
+      --primary-hover: #0a6a72;
+      --primary-soft: rgba(70, 190, 200, .14);
+      --primary-text: #5ccdd6;
+      --saved: #f0b14a;
+      --ok: #4cc38a;
+      --ok-dot: #3dba7c;
+      --ok-soft: rgba(76, 195, 138, .12);
+      --ok-border: rgba(76, 195, 138, .35);
+      --on-ok: #0a131d;
+      --warn: #f0b95e;
+      --warn-soft: rgba(240, 177, 74, .11);
+      --warn-border: rgba(240, 177, 74, .35);
       --err: #f2a7a7;
       --err-soft: rgba(242, 120, 120, .09);
       --err-border: rgba(242, 120, 120, .32);
-      --ring: 0 0 0 3px rgba(123, 166, 247, .35);
+      --ring: 0 0 0 3px rgba(92, 205, 214, .35);
+      --sel: rgba(92, 205, 214, .22);
       --shadow: none;
+      --shadow-card: none;
+      --syn-keyword: #82b1ff;
+      --syn-builtin: #c9a0f2;
+      --syn-string: #f5a97f;
+      --syn-number: #5ccdd6;
+      --syn-atom: #f0b14a;
+      --syn-comment: #7d8ca0;
+      --syn-operator: #a9b6c6;
       color-scheme: dark;
     }
   }
@@ -84,10 +123,10 @@
     position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
     overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
   }
-  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  :focus-visible { outline: 2px solid var(--primary-text); outline-offset: 2px; }
   .link {
     padding: 0; border: 0; background: none; cursor: pointer;
-    color: var(--accent); font-weight: 500;
+    color: var(--primary-text); font-weight: 600;
     text-decoration: underline; text-underline-offset: 2px;
   }
 
@@ -97,29 +136,31 @@
     height: var(--topbar-h);
     display: flex; align-items: center; justify-content: space-between; gap: 16px;
     padding: 0 28px;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
+    background: var(--topbar); color: #fff;
   }
   .brand {
     display: flex; align-items: baseline; gap: .45em; min-width: 0;
     font-size: 15px; white-space: nowrap;
   }
-  .brand-org { font-weight: 600; letter-spacing: -.005em; }
-  .brand-sep { color: var(--text-3); }
-  .brand-app { color: var(--text-2); }
-  .bar-right { display: flex; align-items: center; gap: 18px; min-width: 0; }
-  .score { display: flex; align-items: baseline; gap: 8px; white-space: nowrap; }
-  .score-label { font-size: 13px; color: var(--text-2); }
-  .score-value { font: 600 15px/1 var(--mono); font-variant-numeric: tabular-nums; }
+  .brand-org { font-weight: 650; letter-spacing: -.005em; }
+  .brand-sep { color: var(--topbar-muted); }
+  .brand-app { color: var(--topbar-muted); }
+  .bar-right { display: flex; align-items: center; gap: 16px; min-width: 0; }
+  .score {
+    display: flex; align-items: baseline; gap: 8px; white-space: nowrap;
+    padding: 5px 12px; border-radius: 999px; background: rgba(255, 255, 255, .1);
+  }
+  .score-label { font-size: 13px; color: var(--topbar-muted); }
+  .score-value { font: 600 15px/1 var(--mono); font-variant-numeric: tabular-nums; color: #fff; }
   .account {
     display: flex; align-items: center; gap: 10px; min-width: 0;
-    padding-left: 18px; border-left: 1px solid var(--border);
+    padding-left: 16px; border-left: 1px solid var(--topbar-line);
   }
   .account:empty { display: none; }
   .account-email {
     min-width: 0; max-width: 280px;
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-    font-size: 14px; color: var(--text-2);
+    font-size: 14px; color: rgba(255, 255, 255, .88);
   }
 
   /* ---------- Buttons ---------- */
@@ -134,8 +175,15 @@
   }
   .btn:hover:not(:disabled) { background: var(--surface-2); }
   .btn:focus-visible { outline: none; box-shadow: var(--ring); }
-  .btn-primary { background: var(--btn-bg); border-color: var(--btn-bg); color: #fff; }
-  .btn-primary:hover:not(:disabled) { background: var(--btn-bg-hover); border-color: var(--btn-bg-hover); }
+  .btn-primary { background: var(--primary); border-color: var(--primary); color: #fff; font-weight: 600; }
+  .btn-primary:hover:not(:disabled) { background: var(--primary-hover); border-color: var(--primary-hover); }
+  .btn-outline { background: transparent; border-color: var(--border-strong); color: var(--text); }
+  .btn-outline:hover:not(:disabled) { background: var(--surface); border-color: var(--text-3); }
+  .btn-light { background: #fff; border-color: #fff; color: #0f2c4c; font-weight: 600; }
+  .btn-light:hover:not(:disabled) { background: #e3edf7; border-color: #e3edf7; }
+  .btn-ghost-light { background: transparent; border-color: rgba(255, 255, 255, .4); color: #fff; }
+  .btn-ghost-light:hover:not(:disabled) { background: rgba(255, 255, 255, .1); }
+  .topbar .btn:focus-visible { box-shadow: 0 0 0 3px rgba(255, 255, 255, .45); }
   .btn:disabled {
     background: var(--surface-2); border-color: var(--border); color: var(--text-3);
     cursor: not-allowed;
@@ -173,43 +221,53 @@
     display: grid;
     max-width: 1480px; margin: 0 auto;
     padding: 28px 28px 72px;
-    column-gap: 36px; row-gap: 22px;
-    grid-template-columns: 236px minmax(0, 1fr) 288px;
+    column-gap: 32px; row-gap: 20px;
+    grid-template-columns: 240px minmax(0, 1fr) 288px;
     grid-template-rows: auto auto 1fr;
     grid-template-areas:
       "nav head   tables"
       "nav editor tables"
       "nav output tables";
   }
-  .workspace.tables-closed { grid-template-columns: 236px minmax(0, 1fr) auto; }
+  .workspace.tables-closed { grid-template-columns: 240px minmax(0, 1fr) auto; }
   .q-head, .q-status { grid-area: head; min-width: 0; }
   .q-editor { grid-area: editor; min-width: 0; }
-  .q-output { grid-area: output; min-width: 0; display: flex; flex-direction: column; gap: 22px; }
-  .q-head { scroll-margin-top: calc(var(--topbar-h) + 20px); }
+  .q-output { grid-area: output; min-width: 0; display: flex; flex-direction: column; gap: 12px; }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border); border-radius: var(--card-radius);
+    box-shadow: var(--shadow-card);
+  }
 
   /* ---------- Question list ---------- */
   .qnav {
     grid-area: nav; align-self: start;
     position: sticky; top: calc(var(--topbar-h) + 28px);
   }
-  .qlist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+  .qlist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
   .qbtn {
     width: 100%;
     display: grid; grid-template-columns: 12px 14px minmax(0, 1fr) auto;
     align-items: start; column-gap: 10px;
     padding: 9px 10px;
-    border: 1px solid transparent; border-radius: 7px; background: transparent;
+    border: 1px solid transparent; border-radius: 8px; background: transparent;
     text-align: left; font-size: 14px; line-height: 1.4; cursor: pointer;
   }
-  .qbtn:hover { background: var(--surface-2); }
+  .qbtn:hover { background: var(--nav-hover); }
   .qbtn:focus-visible { outline: none; box-shadow: var(--ring); }
   .qbtn .dot { margin-top: 4px; }
   .qn-num { font: 500 13px/1.45 var(--mono); color: var(--text-3); }
   .qn-title { color: var(--text); }
-  .qn-pts { padding-top: 1px; font-size: 12.5px; color: var(--text-3); white-space: nowrap; }
-  .qbtn[aria-current="true"] { background: var(--accent-soft); }
+  .qn-pts {
+    margin-top: 1px; padding: 1px 7px; border-radius: 999px;
+    background: var(--primary-soft); color: var(--primary-text);
+    font-size: 11.5px; font-weight: 600; white-space: nowrap;
+  }
+  .qbtn[aria-current="true"] {
+    background: var(--surface); border-color: var(--border); box-shadow: var(--shadow-card);
+  }
   .qbtn[aria-current="true"] .qn-title { font-weight: 600; }
-  .qbtn[aria-current="true"] .qn-num { color: var(--accent); }
+  .qbtn[aria-current="true"] .qn-num { color: var(--primary-text); font-weight: 700; }
   .legend {
     list-style: none; margin: 18px 0 0; padding: 14px 10px 0;
     border-top: 1px solid var(--border);
@@ -219,14 +277,14 @@
   .legend li { display: flex; align-items: center; gap: 10px; }
   .qlist:empty + .legend { display: none; }
 
-  /* Status dot: hollow = not started, blue = saved, green check = correct */
+  /* Status dot: grey ring = not started, amber = saved, green check = correct */
   .dot {
     position: relative; display: inline-block; flex: none;
     width: 12px; height: 12px; border-radius: 50%;
     border: 1.5px solid var(--border-strong); background: transparent;
   }
-  [data-status="saved"] > .dot { background: var(--accent); border-color: var(--accent); }
-  [data-status="correct"] > .dot { background: var(--ok); border-color: var(--ok); }
+  [data-status="saved"] > .dot { background: var(--saved); border-color: var(--saved); }
+  [data-status="correct"] > .dot { background: var(--ok-dot); border-color: var(--ok-dot); }
   [data-status="correct"] > .dot::after {
     content: ""; position: absolute; left: 3px; top: 1px;
     width: 3px; height: 6px;
@@ -234,22 +292,28 @@
     transform: rotate(45deg);
   }
 
-  /* ---------- Question header ---------- */
+  /* ---------- Question card ---------- */
   .q-status { color: var(--text-2); }
   .q-status p { margin: 0; }
+  .q-head { padding: 20px 24px; scroll-margin-top: calc(var(--topbar-h) + 20px); }
   .title-row { display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px 12px; }
   .q-title { margin: 0; font-size: 22px; line-height: 1.3; font-weight: 650; letter-spacing: -.012em; }
-  .q-num { margin-right: .15em; color: var(--text-3); font-weight: 500; }
+  .q-num { margin-right: .15em; color: var(--primary-text); font-weight: 700; }
   .q-points {
-    padding: 2px 10px; border: 1px solid var(--border); border-radius: 999px;
-    background: var(--surface-2); color: var(--text-2);
-    font-size: 13px; font-weight: 500; white-space: nowrap;
+    padding: 2px 10px; border-radius: 999px;
+    background: var(--primary-soft); color: var(--primary-text);
+    font-size: 13px; font-weight: 600; white-space: nowrap;
   }
   .q-prompt { margin: 12px 0 0; max-width: 72ch; font-size: 16px; line-height: 1.6; }
-  .q-return { margin: 12px 0 0; font: 13.5px/1.5 var(--mono); overflow-wrap: anywhere; }
+  .q-return {
+    margin: 14px 0 0; padding: 8px 12px;
+    border-left: 3px solid var(--primary); border-radius: 0 6px 6px 0;
+    background: var(--surface-2);
+    font: 13.5px/1.5 var(--mono); overflow-wrap: anywhere;
+  }
   .q-return-label { color: var(--text-2); }
 
-  /* ---------- Editor ---------- */
+  /* ---------- Editor (CodeMirror; the textarea is the fallback) ---------- */
   .editor {
     display: block; width: 100%; height: 260px; min-height: 160px; margin: 0;
     padding: 14px 16px;
@@ -260,12 +324,63 @@
     box-shadow: var(--shadow);
   }
   .editor::placeholder { color: var(--text-3); }
-  .editor:focus { outline: none; border-color: var(--accent); box-shadow: var(--ring); }
+  .editor:focus { outline: none; border-color: var(--primary); box-shadow: var(--ring); }
   .editor[readonly] {
     background: var(--surface-2); border-color: var(--border); color: var(--text-3);
     box-shadow: none; cursor: not-allowed;
   }
-  .editor[readonly]:focus { border-color: var(--border-strong); box-shadow: none; }
+  .CodeMirror {
+    height: 260px; min-height: 160px; resize: vertical;
+    border: 1px solid var(--border-strong); border-radius: var(--radius);
+    background: var(--surface); color: var(--text);
+    font: 14px/1.6 var(--mono);
+    box-shadow: var(--shadow);
+  }
+  .CodeMirror-focused { border-color: var(--primary); box-shadow: var(--ring); }
+  .CodeMirror-lines { padding: 12px 0; }
+  .CodeMirror pre.CodeMirror-line, .CodeMirror pre.CodeMirror-line-like { padding: 0 14px; }
+  .CodeMirror pre.CodeMirror-placeholder { color: var(--text-3); }
+  .cm-s-hvw .CodeMirror-gutters { background: var(--surface-2); border-right: 1px solid var(--border); }
+  .cm-s-hvw .CodeMirror-linenumber { padding: 0 8px 0 10px; color: var(--text-3); }
+  .cm-s-hvw .CodeMirror-cursor { border-left: 2px solid var(--text); }
+  .cm-s-hvw .CodeMirror-selected,
+  .cm-s-hvw.CodeMirror-focused .CodeMirror-selected { background: var(--sel); }
+  .cm-s-hvw .CodeMirror-line::selection,
+  .cm-s-hvw .CodeMirror-line > span::selection,
+  .cm-s-hvw .CodeMirror-line > span > span::selection { background: var(--sel); }
+  .cm-s-hvw .cm-keyword { color: var(--syn-keyword); font-weight: 600; }
+  .cm-s-hvw .cm-builtin, .cm-s-hvw .cm-type { color: var(--syn-builtin); }
+  .cm-s-hvw .cm-string, .cm-s-hvw .cm-string-2 { color: var(--syn-string); }
+  .cm-s-hvw .cm-number { color: var(--syn-number); }
+  .cm-s-hvw .cm-atom { color: var(--syn-atom); }
+  .cm-s-hvw .cm-comment { color: var(--syn-comment); font-style: italic; }
+  .cm-s-hvw .cm-operator { color: var(--syn-operator); }
+  .cm-s-hvw .cm-variable-2, .cm-s-hvw .cm-variable-3 { color: var(--syn-number); }
+  .cm-s-hvw .cm-bracket { color: var(--text-2); }
+  .CodeMirror.is-locked { background: var(--surface-2); border-color: var(--border); box-shadow: none; }
+  .CodeMirror.is-locked .CodeMirror-scroll { cursor: not-allowed; }
+  .CodeMirror.is-locked .CodeMirror-code { opacity: .6; }
+
+  /* Autocomplete list */
+  .CodeMirror-hints {
+    z-index: 60; padding: 4px; max-height: 15em;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--surface); box-shadow: 0 10px 30px rgba(10, 25, 45, .2);
+    font: 13px/1.5 var(--mono);
+  }
+  .CodeMirror-hint {
+    display: flex; justify-content: space-between; gap: 18px;
+    padding: 3px 8px; border-radius: 5px; color: var(--text);
+  }
+  .CodeMirror-hint::after { align-self: center; font: 11px/1 var(--font); color: var(--text-3); }
+  .CodeMirror-hint-table::after { content: "table"; }
+  .CodeMirror-hint-column::after { content: "column"; }
+  .CodeMirror-hint-keyword::after { content: "keyword"; }
+  .CodeMirror-hint-table { color: var(--tbl-name); font-weight: 600; }
+  .CodeMirror-hint-keyword { color: var(--syn-keyword); }
+  li.CodeMirror-hint-active { background: var(--primary); color: #fff; }
+  li.CodeMirror-hint-active::after { color: rgba(255, 255, 255, .8); }
+
   .actions { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
   .save-note { font-size: 13px; color: var(--text-2); }
   .save-note.is-error { color: var(--err); }
@@ -273,13 +388,14 @@
   .signin-note svg { width: 14px; height: 14px; flex: none; color: var(--text-3); }
   .kbd-hint { margin-left: auto; font-size: 12.5px; color: var(--text-3); }
   kbd {
-    padding: 2px 5px; border: 1px solid var(--border); border-bottom-width: 2px; border-radius: 4px;
+    padding: 2px 5px; border: 1px solid var(--border-strong); border-bottom-width: 2px; border-radius: 4px;
     background: var(--surface); color: var(--text-2); font-size: 11.5px;
   }
 
   /* ---------- Result ---------- */
+  .result.is-card { padding: 16px; }
   .result.is-stale { opacity: .5; }
-  .result-head { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 14px; margin-bottom: 10px; }
+  .result-head { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 14px; margin-bottom: 12px; }
   .row-count { font-size: 13px; color: var(--text-2); font-variant-numeric: tabular-nums; }
   .badge {
     display: inline-flex; align-items: center; gap: 6px;
@@ -301,7 +417,12 @@
     padding: 7px 14px; text-align: left; white-space: pre;
     border-bottom: 1px solid var(--border);
   }
-  .grid th { position: sticky; top: 0; z-index: 1; background: var(--surface-2); font-weight: 600; }
+  .grid th {
+    position: sticky; top: 0; z-index: 1;
+    background: var(--thead); color: #fff; border-bottom-color: var(--thead);
+    font-weight: 600;
+  }
+  .grid tbody tr:nth-child(even) td { background: var(--zebra); }
   .grid tbody tr:last-child td { border-bottom: 0; }
   .grid .num { text-align: right; }
   .null { color: var(--text-3); font-size: 12px; letter-spacing: .03em; }
@@ -313,24 +434,38 @@
   .error-label { margin: 0 0 4px; font-size: 13px; font-weight: 600; }
   .error-msg { margin: 0; font: 13px/1.5 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; }
   .error-box .btn { margin-top: 10px; }
-
-  /* ---------- Hint ---------- */
-  .hint { border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
-  .hint > summary {
-    display: flex; align-items: center; gap: 8px;
-    padding: 11px 16px; border-radius: var(--radius);
-    list-style: none; cursor: pointer; user-select: none;
-    color: var(--accent); font-size: 14px; font-weight: 500;
+  .feedback {
+    margin: 0 0 12px; padding: 10px 14px;
+    border: 1px solid var(--warn-border); border-left: 3px solid var(--saved); border-radius: var(--radius);
+    background: var(--warn-soft);
   }
-  .hint > summary::-webkit-details-marker { display: none; }
-  .hint > summary:focus-visible { outline: none; box-shadow: var(--ring); }
-  .hint[open] > summary { border-bottom: 1px solid var(--border); border-radius: var(--radius) var(--radius) 0 0; }
+  .error-box + .feedback { margin: 10px 0 0; }
+  .feedback-title { margin: 0 0 4px; font-size: 13px; font-weight: 700; color: var(--warn); }
+  .feedback ul { margin: 0; padding-left: 18px; }
+  .feedback li { font-size: 14px; line-height: 1.5; color: var(--text); }
+  .feedback li + li { margin-top: 4px; }
+  .feedback code {
+    padding: 0 4px; border: 1px solid var(--border); border-radius: 4px;
+    background: var(--surface); font-size: 12.5px;
+  }
+
+  /* ---------- Expected result / Answer disclosures ---------- */
+  .reveal > summary {
+    display: flex; align-items: center; gap: 8px;
+    padding: 12px 16px; border-radius: var(--card-radius);
+    list-style: none; cursor: pointer; user-select: none;
+    font-size: 14px; font-weight: 600;
+  }
+  .reveal > summary::-webkit-details-marker { display: none; }
+  .reveal > summary:hover { background: var(--surface-2); }
+  .reveal > summary:focus-visible { outline: none; box-shadow: var(--ring); }
+  .reveal[open] > summary { border-bottom: 1px solid var(--border); border-radius: var(--card-radius) var(--card-radius) 0 0; }
+  .reveal > summary .chev { color: var(--primary-text); }
+  .summary-meta { margin-left: auto; font-size: 13px; font-weight: 400; color: var(--text-2); }
   .chev { width: 14px; height: 14px; flex: none; transition: transform .15s; }
-  .hint[open] > summary .chev { transform: rotate(90deg); }
-  .hint-body { display: flex; flex-direction: column; gap: 10px; padding: 16px; }
-  .hint-sec { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 30px; }
-  .hint-sec-2 { margin-top: 10px; }
-  .sec-label { font-size: 12px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--text-3); }
+  .reveal[open] > summary .chev { transform: rotate(90deg); }
+  .reveal-body { display: flex; flex-direction: column; gap: 10px; padding: 16px; }
+  .answer-tools { display: flex; justify-content: flex-end; }
   .code {
     margin: 0; padding: 14px 16px;
     border: 1px solid var(--border); border-radius: var(--radius);
@@ -344,24 +479,23 @@
     position: sticky; top: calc(var(--topbar-h) + 28px);
     display: flex; flex-direction: column;
     max-height: calc(100vh - var(--topbar-h) - 56px);
-    border: 1px solid var(--border); border-radius: 10px;
-    background: var(--surface); overflow: hidden;
+    overflow: hidden;
   }
   .tables-h { margin: 0; font-size: inherit; }
   .tables-toggle {
     width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px;
-    padding: 11px 14px; border: 0; background: none; cursor: pointer;
+    padding: 12px 14px; border: 0; background: none; cursor: pointer;
     font-size: 14px; font-weight: 600; text-align: left;
   }
   .tables-toggle:focus-visible { outline: none; box-shadow: inset var(--ring); }
-  .tables-toggle .chev { color: var(--text-3); }
+  .tables-toggle .chev { color: var(--primary-text); }
   .tables-toggle[aria-expanded="true"] .chev { transform: rotate(90deg); }
   .tables-body { overflow: auto; padding: 0 14px 14px; border-top: 1px solid var(--border); }
   .tables-note { margin: 12px 0 2px; font-size: 12.5px; color: var(--text-2); }
   .tables-note code { font-size: 12px; color: var(--text); }
   .tbl { padding: 12px 0; border-bottom: 1px solid var(--border); }
   .tbl:last-child { padding-bottom: 0; border-bottom: 0; }
-  .tbl-name { margin: 0 0 6px; font: 600 13px/1.4 var(--mono); }
+  .tbl-name { margin: 0 0 6px; font: 700 13px/1.4 var(--mono); color: var(--tbl-name); }
   .cols { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px; }
   .cols li {
     padding: 0 6px; border: 1px solid var(--border); border-radius: 4px;
@@ -375,10 +509,10 @@
     width: min(380px, calc(100vw - 32px)); padding: 0;
     border: 1px solid var(--border); border-radius: 12px;
     background: var(--surface); color: var(--text);
-    box-shadow: 0 20px 50px rgba(0, 0, 0, .2);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, .25);
   }
   .auth-dialog:focus { outline: none; }
-  .auth-dialog::backdrop { background: rgba(13, 18, 26, .45); }
+  .auth-dialog::backdrop { background: rgba(8, 20, 36, .5); }
   .auth-inner { padding: 18px 20px 22px; }
   .auth-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
   .seg {
@@ -389,7 +523,7 @@
     padding: 6px 12px; border: 0; border-radius: 6px; background: transparent;
     color: var(--text-2); font-size: 13.5px; font-weight: 500; cursor: pointer;
   }
-  .seg button[aria-pressed="true"] { background: var(--surface); color: var(--text); box-shadow: 0 1px 2px rgba(0, 0, 0, .1); }
+  .seg button[aria-pressed="true"] { background: var(--surface); color: var(--text); font-weight: 600; box-shadow: 0 1px 2px rgba(0, 0, 0, .12); }
   .seg button:focus-visible { outline: none; box-shadow: var(--ring); }
   .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; font-size: 13.5px; font-weight: 500; color: var(--text-2); }
   .field-hint { font-weight: 400; color: var(--text-3); font-size: 12.5px; }
@@ -398,16 +532,16 @@
     border: 1px solid var(--border-strong); border-radius: 7px;
     background: var(--surface); color: var(--text); font-size: 15px;
   }
-  .auth-input:focus { outline: none; border-color: var(--accent); box-shadow: var(--ring); }
+  .auth-input:focus { outline: none; border-color: var(--primary); box-shadow: var(--ring); }
   .auth-msg { margin: 0 0 14px; padding: 9px 12px; border: 1px solid; border-radius: 7px; font-size: 13.5px; }
   .auth-msg.is-error { color: var(--err); background: var(--err-soft); border-color: var(--err-border); }
-  .auth-msg.is-info { color: var(--text); background: var(--accent-soft); border-color: transparent; }
+  .auth-msg.is-info { color: var(--text); background: var(--primary-soft); border-color: transparent; }
 
   /* ---------- Medium screens: tables panel moves under the editor ---------- */
   @media (min-width: 768px) and (max-width: 1099px) {
     .workspace, .workspace.tables-closed {
-      padding: 24px 24px 64px; column-gap: 28px;
-      grid-template-columns: 200px minmax(0, 1fr);
+      padding: 24px 24px 64px; column-gap: 24px;
+      grid-template-columns: 210px minmax(0, 1fr);
       grid-template-rows: auto auto auto 1fr;
       grid-template-areas: "nav head" "nav editor" "nav tables" "nav output";
     }
@@ -418,16 +552,17 @@
   @media (max-width: 767px) {
     .topbar { padding: 0 16px; gap: 12px; }
     .brand { flex-direction: column; align-items: flex-start; gap: 0; line-height: 1.25; }
-    .brand-org { font-size: 12px; font-weight: 500; color: var(--text-2); }
+    .brand-org { font-size: 12px; font-weight: 500; color: var(--topbar-muted); }
     .brand-sep { display: none; }
-    .brand-app { font-size: 15px; font-weight: 600; color: var(--text); }
-    .bar-right { gap: 12px; }
+    .brand-app { font-size: 15px; font-weight: 650; color: #fff; }
+    .bar-right { gap: 10px; }
+    .score { padding: 4px 10px; }
     .score-label { display: none; }
-    .account { gap: 8px; padding-left: 12px; }
-    .account-email { max-width: 30vw; font-size: 13px; }
+    .account { gap: 8px; padding-left: 10px; }
+    .account-email { max-width: 28vw; font-size: 13px; }
     .flash { padding: 0 16px; }
     .workspace, .workspace.tables-closed {
-      padding: 0 16px 56px; row-gap: 20px;
+      padding: 0 16px 56px; row-gap: 16px;
       grid-template-columns: minmax(0, 1fr);
       grid-template-rows: none;
       grid-template-areas: "nav" "head" "editor" "tables" "output";
@@ -446,15 +581,16 @@
     .qbtn .dot { margin-top: 0; }
     .qn-num { font-size: 14px; color: var(--text); }
     .qn-title, .qn-pts, .legend { display: none; }
-    .qbtn[aria-current="true"] { border-color: var(--accent); }
-    .q-head { scroll-margin-top: calc(var(--topbar-h) + 70px); }
+    .qbtn[aria-current="true"] { border-color: var(--primary); background: var(--primary-soft); box-shadow: none; }
+    .q-head { padding: 16px; scroll-margin-top: calc(var(--topbar-h) + 70px); }
     .q-title { font-size: 20px; }
     .q-prompt { font-size: 15.5px; }
-    .editor { height: 200px; font-size: 16px; }
+    .editor, .CodeMirror { height: 200px; font-size: 16px; }
     .auth-input { font-size: 16px; }
     .kbd-hint { display: none; }
     .tables { position: static; max-height: none; }
     .table-wrap { max-height: 360px; }
+    .result.is-card { padding: 12px; }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -463,6 +599,11 @@
   }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/sql/sql.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/sql-hint.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/display/placeholder.min.js"></script>
 </head>
 <body>
 
@@ -501,7 +642,7 @@
     <noscript><p>This quiz needs JavaScript.</p></noscript>
   </div>
 
-  <section class="q-head" id="q-head" aria-labelledby="q-title" hidden>
+  <section class="q-head card" id="q-head" aria-labelledby="q-title" hidden>
     <div class="title-row">
       <h1 class="q-title" id="q-title"><span class="q-num" id="q-num"></span> <span id="q-title-text"></span></h1>
       <span class="q-points" id="q-points"></span>
@@ -520,7 +661,7 @@
         <svg id="run-icon" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 1.5v9l7.5-4.5z" fill="currentColor"/></svg>
         <span id="run-label">Run</span>
       </button>
-      <button type="button" class="btn" id="save" disabled>Save</button>
+      <button type="button" class="btn btn-outline" id="save" disabled>Save</button>
       <span class="save-note" id="save-note" aria-live="polite"></span>
       <p class="signin-note" id="signin-note" hidden>
         <svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 1a3.5 3.5 0 0 0-3.5 3.5V6H4a1.5 1.5 0 0 0-1.5 1.5v6A1.5 1.5 0 0 0 4 15h8a1.5 1.5 0 0 0 1.5-1.5v-6A1.5 1.5 0 0 0 12 6h-.5V4.5A3.5 3.5 0 0 0 8 1zm2 5H6V4.5a2 2 0 1 1 4 0V6z"/></svg>
@@ -530,7 +671,7 @@
     </div>
   </section>
 
-  <aside class="tables" id="tables" aria-labelledby="tables-toggle">
+  <aside class="tables card" id="tables" aria-labelledby="tables-toggle">
     <h2 class="tables-h">
       <button type="button" class="tables-toggle" id="tables-toggle" aria-expanded="true" aria-controls="tables-body">
         <span>Tables</span>
@@ -565,22 +706,26 @@
 
   <section class="q-output" id="q-output" hidden>
     <div class="result" id="result" hidden></div>
-    <details class="hint" id="hint">
+    <details class="reveal card" id="reveal-result">
       <summary>
         <svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        <span id="hint-summary">Show hint</span>
+        <span>Expected result</span>
+        <span class="summary-meta" id="hint-rows"></span>
       </summary>
-      <div class="hint-body">
-        <div class="hint-sec">
-          <span class="sec-label">Expected SQL</span>
-          <button type="button" class="btn btn-sm" id="hint-copy">Copy</button>
+      <div class="reveal-body">
+        <div class="table-wrap" id="hint-table" tabindex="0" role="region" aria-label="Expected result"></div>
+      </div>
+    </details>
+    <details class="reveal card" id="reveal-answer">
+      <summary>
+        <svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>Answer (SQL)</span>
+      </summary>
+      <div class="reveal-body">
+        <div class="answer-tools">
+          <button type="button" class="btn btn-sm btn-outline" id="hint-copy">Copy</button>
         </div>
         <pre class="code" id="hint-sql"></pre>
-        <div class="hint-sec hint-sec-2">
-          <span class="sec-label">Expected result</span>
-          <span class="row-count" id="hint-rows"></span>
-        </div>
-        <div class="table-wrap" id="hint-table" tabindex="0" role="region" aria-label="Expected result"></div>
       </div>
     </details>
   </section>
@@ -633,8 +778,8 @@ const els = {
   save: $("save"), saveNote: $("save-note"),
   signinNote: $("signin-note"), signinLink: $("signin-link"), kbdHint: $("kbd-hint"),
   result: $("result"), srStatus: $("sr-status"),
-  hint: $("hint"), hintSummary: $("hint-summary"), hintSql: $("hint-sql"),
-  hintCopy: $("hint-copy"), hintRows: $("hint-rows"), hintTable: $("hint-table"),
+  revealResult: $("reveal-result"), revealAnswer: $("reveal-answer"),
+  hintSql: $("hint-sql"), hintCopy: $("hint-copy"), hintRows: $("hint-rows"), hintTable: $("hint-table"),
   tablesToggle: $("tables-toggle"), tablesBody: $("tables-body"),
   dialog: $("auth-dialog"), authForm: $("auth-form"),
   modeSignin: $("mode-signin"), modeSignup: $("mode-signup"), authClose: $("auth-close"),
@@ -645,6 +790,16 @@ const els = {
 const IS_MAC = /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent);
 const STATUS_TEXT = { none: "Not started", saved: "Saved", correct: "Correct" };
 const TABLES_KEY = "hvw-sql-quiz.tables-open";
+
+// Table and column names for editor autocomplete (schema quiz).
+const SQL_TABLES = {
+  pressure_zones: ["zone_id", "zone_name"],
+  mains: ["main_id", "zone_id", "material", "diameter_in", "length_ft", "install_year"],
+  crews: ["crew_id", "crew_name", "shift"],
+  breaks: ["break_id", "main_id", "reported_at", "break_type", "cause", "est_loss_gal"],
+  repairs: ["repair_id", "break_id", "crew_id", "started_at", "completed_at", "repair_method", "cost_usd"],
+};
+const SQL_COLUMNS = [...new Set(Object.values(SQL_TABLES).flat())];
 
 const state = {
   questions: [],
@@ -736,6 +891,7 @@ function showStatus(kind, message) {
   els.head.hidden = els.editorSec.hidden = els.output.hidden = !ready;
   els.status.hidden = ready;
   els.status.replaceChildren();
+  if (ready) editor.refresh();
   if (kind === "loading") {
     els.status.append(el("p", "", "Loading questions…"));
   } else if (kind === "setup") {
@@ -756,6 +912,153 @@ function showStatus(kind, message) {
     els.status.append(box);
   }
 }
+
+// ---------- SQL editor ----------
+// CodeMirror 5 with SQL autocomplete. If the CDN scripts didn't load, the
+// plain textarea keeps working with the same interface.
+function createEditor(textarea) {
+  const CM = window.CodeMirror;
+  if (!CM || !CM.hint || !CM.hint.sql) return textareaEditor(textarea);
+
+  const closeHint = (cm) => { if (cm.state.completionActive) cm.state.completionActive.close(); };
+  const cm = CM.fromTextArea(textarea, {
+    mode: "text/x-pgsql",
+    theme: "hvw",
+    lineNumbers: true,
+    indentUnit: 4,
+    tabSize: 4,
+    indentWithTabs: false,
+    readOnly: "nocursor",
+    spellcheck: false,
+    autocorrect: false,
+    autocapitalize: false,
+    screenReaderLabel: "SQL query",
+    extraKeys: {
+      "Ctrl-Space": "autocomplete",
+      "Ctrl-Enter": (c) => { closeHint(c); runQuery(); },
+      "Cmd-Enter": (c) => { closeHint(c); runQuery(); },
+      "Ctrl-S": () => saveAnswer(),
+      "Cmd-S": () => saveAnswer(),
+      Tab: (c) => (c.somethingSelected()
+        ? c.indentSelection("add")
+        : c.replaceSelection(" ".repeat(c.getOption("indentUnit")), "end")),
+      "Shift-Tab": (c) => c.indentSelection("subtract"),
+    },
+    hintOptions: { hint: sqlHint, tables: SQL_TABLES, completeSingle: false },
+  });
+
+  // Same 4,000-character cap as the textarea's maxlength and the server.
+  cm.on("beforeChange", (c, change) => {
+    if (change.origin === "setValue") return;
+    const removed = c.getRange(change.from, change.to).length;
+    const added = change.text.join("\n").length;
+    if (c.getValue().length - removed + added > 4000) change.cancel();
+  });
+  cm.on("change", (_c, change) => { if (change.origin !== "setValue") onEditorInput(); });
+  // Open suggestions after 2+ letters of a name, or right after "name."
+  cm.on("inputRead", (c, change) => {
+    if (c.getOption("readOnly") || c.state.completionActive || change.origin !== "+input") return;
+    const cur = c.getCursor();
+    const type = c.getTokenTypeAt(cur) || "";
+    if (/string|comment/.test(type)) return;
+    const before = c.getLine(cur.line).slice(0, cur.ch);
+    if (/(?:^|[^\w$])[A-Za-z_][\w$]+$/.test(before) || /[A-Za-z_][\w$]*\.$/.test(before)) {
+      c.showHint({ auto: true });
+    }
+  });
+  if (window.ResizeObserver) new ResizeObserver(() => cm.refresh()).observe(cm.getWrapperElement());
+
+  return {
+    getValue: () => cm.getValue(),
+    setValue(text) {
+      cm.setValue(text);
+      cm.clearHistory();
+      cm.scrollTo(0, 0);
+    },
+    setLocked(locked, placeholder) {
+      cm.setOption("readOnly", locked ? "nocursor" : false);
+      cm.setOption("placeholder", placeholder);
+      cm.getWrapperElement().classList.toggle("is-locked", locked);
+    },
+    refresh: () => cm.refresh(),
+  };
+
+  // sql-hint suggests tables and keywords. Add bare column names, and complete
+  // "table.", "alias." and "quiz." ourselves (sql-hint misses these in pgsql mode).
+  // When the list opened on its own and the word is already complete (NULL, DESC,
+  // a column name), return nothing so Enter makes a new line instead of picking.
+  function sqlHint(c, options) {
+    const cur = c.getCursor();
+    const before = c.getLine(cur.line).slice(0, cur.ch);
+    const auto = !!(options && options.auto);
+    const textOf = (item) => (typeof item === "string" ? item : item.text);
+    const tagged = (names, className) => names.map((text) => ({ text, className }));
+    const finish = (list, word) => {
+      const lower = word.toLowerCase();
+      if (auto && word && list.some((i) => textOf(i).toLowerCase() === lower)) list = [];
+      return { list, from: CM.Pos(cur.line, cur.ch - word.length), to: cur };
+    };
+
+    const dotted = before.match(/([A-Za-z_][\w$]*)\.([\w$]*)$/);
+    if (dotted) {
+      const [, qualifier, part] = dotted;
+      const q = qualifier.toLowerCase();
+      const p = part.toLowerCase();
+      // Unknown alias (e.g. SELECT typed before FROM): offer every column.
+      const names = q === "quiz" ? Object.keys(SQL_TABLES) : SQL_TABLES[q] || SQL_TABLES[aliasTable(c, q)] || SQL_COLUMNS;
+      return finish(tagged(names.filter((n) => n.startsWith(p)), q === "quiz" ? "CodeMirror-hint-table" : "CodeMirror-hint-column"), part);
+    }
+
+    const word = (before.match(/[A-Za-z_][\w$]*$/) || [""])[0];
+    const res = CM.hint.sql(c, options) || { list: [] };
+    const lower = word.toLowerCase();
+    const have = new Set(res.list.map((i) => textOf(i).toLowerCase()));
+    const cols = tagged(SQL_COLUMNS.filter((n) => n.startsWith(lower) && !have.has(n)), "CodeMirror-hint-column");
+    const isKeyword = (i) => typeof i === "object" && /keyword/.test(i.className || "");
+    return finish([...res.list.filter((i) => !isKeyword(i)), ...cols, ...res.list.filter(isKeyword)], word);
+  }
+
+  // "FROM breaks AS b" / "JOIN quiz.mains m" -> alias b or m maps to its table.
+  function aliasTable(c, alias) {
+    const re = /\b(?:quiz\.)?(pressure_zones|mains|crews|breaks|repairs)\s+(?:as\s+)?([A-Za-z_][\w$]*)/gi;
+    for (const m of c.getValue().matchAll(re)) {
+      if (m[2].toLowerCase() === alias) return m[1].toLowerCase();
+    }
+    return null;
+  }
+}
+
+function textareaEditor(ta) {
+  ta.addEventListener("input", onEditorInput);
+  ta.addEventListener("keydown", (e) => {
+    const mod = e.ctrlKey || e.metaKey;
+    if (mod && e.key === "Enter") { e.preventDefault(); runQuery(); }
+    else if (mod && (e.key === "s" || e.key === "S")) { e.preventDefault(); saveAnswer(); }
+  });
+  return {
+    getValue: () => ta.value,
+    setValue(text) {
+      ta.value = text;
+      ta.scrollTop = 0;
+      ta.scrollLeft = 0;
+    },
+    setLocked(locked, placeholder) {
+      ta.readOnly = locked;
+      ta.placeholder = placeholder;
+    },
+    refresh() {},
+  };
+}
+
+function onEditorInput() {
+  const id = state.currentId;
+  if (id == null || !state.session) return;
+  state.drafts[id] = editor.getValue();
+  delete state.saveError[id];
+  renderSaveNote();
+}
+
+const editor = createEditor(els.editor);
 
 // ---------- questions ----------
 async function loadQuestions() {
@@ -839,21 +1142,18 @@ function selectQuestion(id, { scroll = true } = {}) {
   els.qPrompt.textContent = q.prompt;
   els.qReturn.textContent = q.output_columns;
 
-  els.editor.value = state.drafts[q.id] ?? "";
-  els.editor.scrollTop = 0;
-  els.editor.scrollLeft = 0;
+  editor.setValue(state.drafts[q.id] ?? "");
 
-  els.hint.open = false;
-  els.hintSql.textContent = q.hint_sql || "";
+  els.revealResult.open = false;
+  els.revealAnswer.open = false;
   els.hintTable.replaceChildren();
   if (q.hint_result) {
     els.hintRows.textContent = rowsLabel(q.hint_result.rows.length);
     els.hintTable.append(buildTable(q.hint_result.columns, q.hint_result.rows));
-    els.hintTable.hidden = false;
-  } else {
-    els.hintRows.textContent = "";
-    els.hintTable.hidden = true;
   }
+  els.revealResult.hidden = !q.hint_result;
+  els.hintSql.textContent = q.hint_sql || "";
+  els.revealAnswer.hidden = !q.hint_sql;
   els.srStatus.textContent = "";
 
   renderNav();
@@ -863,6 +1163,242 @@ function selectQuestion(id, { scroll = true } = {}) {
   if (scroll && els.head.getBoundingClientRect().top < 0) {
     els.head.scrollIntoView({ block: "start" });
   }
+}
+
+// ---------- feedback on wrong answers ----------
+// Tips built in the page from the taker's SQL, the database error, and the
+// expected result. They point at common mistakes without giving the answer.
+const TEXT_VALUES = ["Cast Iron", "Ductile Iron", "PVC", "Asbestos Cement", "Day", "Night",
+  "Circumferential", "Longitudinal", "Joint Leak", "Corrosion Hole", "Frost", "Corrosion",
+  "Ground Movement", "Pressure Surge", "Third-Party Damage", "Clamp", "Pipe Section Replacement",
+  "Joint Repair", "unassigned", "in progress"];
+const SQL_WORDS = ["select", "from", "where", "group", "order", "having", "join", "left", "inner",
+  "outer", "limit", "distinct", "count", "round", "case", "when", "then", "else", "with", "between",
+  "like", "extract", "epoch", "coalesce", "nullif", "desc", "null", "and", "not", "sum", "avg", "max", "min"];
+const MAX_TIPS = 3;
+const tick = (s) => "`" + s + "`";
+
+// Same value rule as the run-sql check: numbers to 2 decimals, the rest as text.
+const normVal = (v) => (v === null || typeof v === "boolean" ? v : typeof v === "number" ? Math.round(v * 100) / 100 : String(v));
+const rowKey = (r) => JSON.stringify(r.map(normVal));
+const decimals = (n) => (String(n).split(".")[1] || "").length;
+const roundTo = (n, d) => Math.round(n * 10 ** d) / 10 ** d;
+
+// Lowercased SQL with comments removed and string literals emptied.
+function sqlCode(sql) {
+  return sql.replace(/('(?:[^']|'')*')|--[^\n]*|\/\*[\s\S]*?\*\//g, (_m, str) => (str ? "''" : " ")).toLowerCase();
+}
+
+function editDistance(a, b) {
+  const d = Array.from({ length: b.length + 1 }, (_, i) => i);
+  for (let i = 1; i <= a.length; i++) {
+    let prev = d[0];
+    d[0] = i;
+    for (let j = 1; j <= b.length; j++) {
+      const keep = d[j];
+      d[j] = Math.min(d[j] + 1, d[j - 1] + 1, prev + (a[i - 1] === b[j - 1] ? 0 : 1));
+      prev = keep;
+    }
+  }
+  return d[b.length];
+}
+
+function closest(word, options) {
+  let best = null, bestDist = Infinity;
+  for (const o of options) {
+    const dist = editDistance(word, o);
+    if (dist < bestDist) { best = o; bestDist = dist; }
+  }
+  return bestDist > 0 && bestDist <= (word.length <= 4 ? 1 : 2) ? best : null;
+}
+
+const tablesWith = (col) => Object.keys(SQL_TABLES).filter((t) => SQL_TABLES[t].includes(col));
+
+function unknownColumnTip(name, code) {
+  const lower = name.toLowerCase();
+  if (new RegExp(`\\bas\\s+${lower.replace(/\W/g, "")}\\b`).test(code)) {
+    return `${tick(name)} is a name you gave in SELECT. WHERE, GROUP BY and HAVING can't use it; repeat the expression there instead.`;
+  }
+  if (SQL_TABLES[lower]) return `${tick(name)} is a table, not a column.`;
+  const value = TEXT_VALUES.find((v) => v.toLowerCase() === lower);
+  if (value) {
+    return `Put text values in single quotes, with exact capitals: ${tick(`'${value}'`)}. Without quotes (or in double quotes) Postgres reads a column name.`;
+  }
+  const best = closest(lower, SQL_COLUMNS);
+  return best ? `No column ${tick(name)}. Did you mean ${tick(best)}?` : `No column ${tick(name)}. Check the Tables panel for exact names.`;
+}
+
+function errorTips(sql, message) {
+  const tips = [];
+  const add = (t) => { if (t && !tips.includes(t)) tips.push(t); };
+  const code = sqlCode(sql);
+  const msg = String(message);
+  const doubleQuoted = [...sql.matchAll(/"([^"]+)"/g)].map((m) => m[1]);
+  let m;
+
+  if (/==/.test(code)) add(`SQL compares with a single ${tick("=")}, not ${tick("==")}.`);
+  if ((m = msg.match(/column "([^"]+)" does not exist/))) {
+    add(doubleQuoted.includes(m[1]) && !SQL_COLUMNS.includes(m[1])
+      ? `Use single quotes for text: ${tick(`'${m[1]}'`)}. Double quotes mean a column or table name.`
+      : unknownColumnTip(m[1], code));
+  } else if ((m = msg.match(/column (\w+)\.(\w+) does not exist/))) {
+    const owners = tablesWith(m[2].toLowerCase());
+    add(owners.length
+      ? `${tick(m[2])} is a column of ${owners.map(tick).join(" and ")}. Check which table ${tick(m[1])} stands for.`
+      : unknownColumnTip(m[2], code));
+  }
+  if ((m = msg.match(/relation "([^"]+)" does not exist/))) {
+    const name = m[1].replace(/^quiz\./i, "");
+    const best = closest(name.toLowerCase(), Object.keys(SQL_TABLES));
+    add(best ? `No table ${tick(name)}. Did you mean ${tick(best)}?` : `No table ${tick(name)}. The tables are ${Object.keys(SQL_TABLES).map(tick).join(", ")}.`);
+  }
+  if ((m = msg.match(/syntax error at or near "([^"]+)"/))) {
+    const near = m[1];
+    const word = /^[A-Za-z_]+$/.test(near) && !SQL_WORDS.includes(near.toLowerCase())
+      ? closest(near.toLowerCase(), SQL_WORDS.filter((w) => w.length > 2)) : null;
+    if (word) add(`Typo? ${tick(near)} looks like ${tick(word.toUpperCase())}.`);
+    else if (TEXT_VALUES.some((v) => v.split(/[\s-]/).includes(near))) add(`Put text values in single quotes, e.g. ${tick("material = 'Cast Iron'")}.`);
+  }
+  if (/must appear in the GROUP BY clause or be used in an aggregate function/.test(msg)) {
+    add(`Every column in SELECT must be in ${tick("GROUP BY")} or inside ${tick("COUNT")}, ${tick("SUM")} or ${tick("AVG")}.`);
+  }
+  if (/aggregate functions are not allowed in WHERE/.test(msg)) {
+    add(`${tick("WHERE")} runs before grouping. Filter on ${tick("COUNT")}/${tick("SUM")}/${tick("AVG")} with ${tick("HAVING")} after ${tick("GROUP BY")}.`);
+  }
+  if ((m = msg.match(/column reference "([^"]+)" is ambiguous/))) {
+    add(`${tick(m[1])} is in more than one joined table. Put the table or alias in front, e.g. ${tick(`b.${m[1]}`)}.`);
+  }
+  if ((m = msg.match(/missing FROM-clause entry for table "([^"]+)"/))) {
+    add(`${tick(m[1] + ".")} is used, but ${tick(m[1])} isn't a table or alias in FROM/JOIN. Define it, e.g. ${tick(`FROM breaks AS ${m[1]}`)}.`);
+  }
+  if (/function round\(double precision, integer\) does not exist/.test(msg)) {
+    add(`${tick("ROUND(x, n)")} needs a numeric value in Postgres. Cast first: ${tick("ROUND(x::numeric, 1)")}.`);
+  }
+  if (/operator does not exist: timestamp[\w ]* ~~/.test(msg)) {
+    add(`${tick("LIKE")} works on text, and this column is a timestamp. Filter with a range: ${tick(">= '2025-01-01' AND < '2025-02-01'")}.`);
+  }
+  if (/invalid input syntax for type (timestamp|date)/.test(msg)) add(`Write dates as ${tick("'YYYY-MM-DD'")} in single quotes.`);
+  if (/operator does not exist: (text|character varying) = integer|integer = (text|character varying)/.test(msg)) {
+    add("You're comparing text with a number. Text values go in single quotes; numbers don't.");
+  }
+  if (/statement timeout/.test(msg)) add(`The query ran over 5 seconds. A ${tick("JOIN")} without an ${tick("ON")} condition multiplies rows; check every join.`);
+  if (/subquery in FROM must have an alias/.test(msg)) add(`Give the subquery a name: ${tick("FROM (SELECT …) AS t")}.`);
+  if (/division by zero/.test(msg)) add(`Something divides by zero. Wrap the divisor: ${tick("NULLIF(x, 0)")}.`);
+  return tips;
+}
+
+// Pair each returned row with its expected row: by the first column when it
+// identifies rows (material, break_id, crew_name), otherwise by position.
+function alignRows(gotRows, expRows) {
+  const key = (r) => JSON.stringify(normVal(r[0]));
+  const expByKey = new Map(expRows.map((r) => [key(r), r]));
+  if (expByKey.size === expRows.length && gotRows.every((r) => expByKey.has(key(r)))) {
+    return { keyed: true, pairs: gotRows.map((r) => [r, expByKey.get(key(r))]) };
+  }
+  return { keyed: false, pairs: gotRows.map((r, i) => [r, expRows[i]]) };
+}
+
+function resultTips(q, sql, got) {
+  const exp = q && q.hint_result;
+  if (!exp) return [];
+  const tips = [];
+  const add = (t) => { if (t && !tips.includes(t)) tips.push(t); };
+  const code = sqlCode(sql);
+  const joins = /\bjoin\b/.test(code);
+  const outerJoin = /\b(left|right|full)\s+(outer\s+)?join\b/.test(code);
+  const [wanted, sortPhrase] = q.output_columns.split(/\s+[—–]\s+/);
+  const gotKeys = got.rows.map(rowKey);
+  const expKeys = exp.rows.map(rowKey);
+
+  // Same rows in a different order: that's the only problem.
+  if (got.columns.length === exp.columns.length && gotKeys.length === expKeys.length &&
+      [...gotKeys].sort().join("\n") === [...expKeys].sort().join("\n")) {
+    return [`Right rows, wrong order. Sort them: ${sortPhrase ? tick(sortPhrase) : `check your ${tick("ORDER BY")}`}.`];
+  }
+
+  if (/\/\s*5280(?![\d.])/.test(code) && !/::\s*(numeric|decimal|float|real|double)/.test(code)) {
+    add(`${tick("length_ft")} is a whole number, so ${tick("/ 5280")} does integer division and drops the decimals. Divide by ${tick("5280.0")} instead.`);
+  }
+  if (joins && (code.match(/\bselect\b/g) || []).length === 1 && /\bsum\s*\(/.test(code) && /length_ft/.test(code) && /\bbreaks\b/.test(code)) {
+    add(`Joining breaks to mains repeats each main's ${tick("length_ft")} once per break, so miles get double-counted. Sum miles from ${tick("mains")} on its own (a subquery or CTE), count breaks separately, then combine.`);
+  }
+  if (/completed repairs/i.test(q.prompt) && !/is\s+not\s+null/.test(code)) {
+    add(`Only completed repairs count: those with ${tick("completed_at IS NOT NULL")}.`);
+  }
+
+  if (got.columns.length !== exp.columns.length) {
+    add(`Return ${exp.columns.length} columns, in this order: ${tick(wanted)}. Yours has ${got.columns.length}.`);
+    return tips;
+  }
+
+  const n = got.rows.length, m = exp.rows.length;
+  if (n !== m && !got.truncated) {
+    if (n < m && joins && !outerJoin && /no row/i.test(q.prompt)) {
+      add(`An inner ${tick("JOIN")} drops rows with no match in the other table. Use ${tick("LEFT JOIN")} to keep them.`);
+    }
+    if (n > m && /\bat least\b/i.test(q.prompt) && !/\bhaving\b/.test(code)) {
+      add(`Keep only the groups the question asks for. Filter groups with ${tick("HAVING")} after ${tick("GROUP BY")}; ${tick("WHERE")} can't use ${tick("COUNT")}.`);
+    }
+    const between = sql.match(/between\s+'\d{4}-\d{2}-\d{2}'\s+and\s+'(\d{4}-\d{2}-\d{2})'/i);
+    if (between) {
+      add(`${tick(`BETWEEN … AND '${between[1]}'`)} stops at midnight at the start of ${between[1]}, so later times that day are left out. Use ${tick(">= start AND < the day after the end")}.`);
+    }
+    if (n > m && new Set(gotKeys).size < n && new Set(expKeys).size === m) {
+      add(`Some rows appear more than once. A ${tick("JOIN")} may match more than once; check its ${tick("ON")} condition.`);
+    }
+    if (!tips.length) add(`Expected ${rowsLabel(m)}; yours has ${n}. Check your ${tick("WHERE")} filter and joins.`);
+    return tips;
+  }
+
+  const { keyed, pairs } = alignRows(got.rows, exp.rows);
+  exp.columns.forEach((name, c) => {
+    const vals = pairs.map(([g, e]) => [g[c], e[c]]).filter(([g, e]) => g != null && e != null);
+    if (!vals.length || vals.every(([g, e]) => normVal(g) === normVal(e))) return;
+
+    if (vals.every(([g, e]) => typeof g === "number" && typeof e === "number")) {
+      const ratios = vals.filter(([, e]) => e !== 0).map(([g, e]) => g / e);
+      const k = ratios.length && ratios.every((r) => Math.abs(r / ratios[0] - 1) < 0.03) ? ratios[0] : null;
+      const near = (t) => k !== null && Math.abs(k / t - 1) < 0.03;
+      const dec = Math.max(...vals.map(([, e]) => decimals(e)));
+      if (near(5280)) add(`${tick(name)} looks like feet. Convert to miles: divide by ${tick("5280.0")}.`);
+      else if (near(3600)) add(`${tick(name)} looks like seconds. ${tick("EXTRACT(EPOCH FROM …)")} gives seconds; divide by 3600 for hours.`);
+      else if (near(60)) add(`${tick(name)} looks like minutes; divide by 60 for hours.`);
+      else if (near(0.01)) add(`${tick(name)} is 100 times too small. "Per 100 miles" means multiply by 100.`);
+      else if (near(100)) add(`${tick(name)} is 100 times too big. Check where you multiply by 100.`);
+      else if (vals.every(([g, e]) => g === Math.trunc(e)) && vals.some(([, e]) => !Number.isInteger(e))) {
+        if (!tips.some((t) => t.includes("integer division"))) add(`${tick(name)} lost its decimals. Integer ÷ integer drops them in Postgres: divide by a decimal like ${tick("5280.0")} or cast with ${tick("::numeric")}.`);
+      } else if (vals.every(([g, e]) => Math.abs(roundTo(g, dec) - e) < 1e-9)) {
+        add(`Round ${tick(name)} to ${dec} decimal place${dec === 1 ? "" : "s"}: ${tick(`ROUND(…, ${dec})`)}.`);
+      } else if (keyed && outerJoin && /count\s*\(\s*\*\s*\)/.test(code) && vals.every(([g, e]) => g - e === 0 || g - e === 1)) {
+        add(`With ${tick("LEFT JOIN")}, ${tick("COUNT(*)")} counts an unmatched row as 1. Count a column from the joined table, e.g. ${tick("COUNT(b.break_id)")}.`);
+      } else if (keyed && joins && !tips.length && vals.every(([g, e]) => g > e)) {
+        add(`${tick(name)} is too high in every row. A ${tick("JOIN")} may be repeating rows before they're added up.`);
+      }
+    } else if (keyed) {
+      const diff = vals.find(([g, e]) => String(g) !== String(e));
+      if (diff && String(diff[0]).trim().toLowerCase() === String(diff[1]).trim().toLowerCase()) {
+        add(`Text must match exactly, including capitals and spaces: expected ${tick(`'${diff[1]}'`)}, got ${tick(`'${diff[0]}'`)}.`);
+      } else if (diff) {
+        const labels = [...new Set(exp.rows.map((r) => String(r[c])))];
+        if (labels.length <= 4) add(`Check ${tick(name)}: the expected values are ${labels.map((v) => tick(`'${v}'`)).join(", ")}.`);
+      }
+    }
+  });
+  if (!tips.length) add("Some values differ. Open Expected result below and compare row by row.");
+  return tips;
+}
+
+function feedbackBox(tips) {
+  const box = el("div", "feedback");
+  box.append(el("p", "feedback-title", "What to check"));
+  const ul = el("ul");
+  for (const tip of tips.slice(0, MAX_TIPS)) {
+    const li = el("li");
+    tip.split("`").forEach((part, i) => li.append(i % 2 ? el("code", "", part) : document.createTextNode(part)));
+    ul.append(li);
+  }
+  box.append(ul);
+  return box;
 }
 
 // ---------- rendering ----------
@@ -885,12 +1421,12 @@ function renderAccount() {
     const email = state.session.user.email || "Signed in";
     const span = el("span", "account-email", email);
     span.title = email;
-    const out = el("button", "btn btn-sm", "Sign out");
+    const out = el("button", "btn btn-sm btn-ghost-light", "Sign out");
     out.type = "button";
     out.addEventListener("click", () => signOut(out));
     a.append(span, out);
   } else {
-    const inBtn = el("button", "btn btn-sm btn-primary", "Sign in");
+    const inBtn = el("button", "btn btn-sm btn-light", "Sign in");
     inBtn.type = "button";
     inBtn.addEventListener("click", () => openAuth("signin"));
     a.append(inBtn);
@@ -903,8 +1439,7 @@ function renderControls() {
   const running = !!state.running[id];
   const saving = !!state.saving[id];
 
-  els.editor.readOnly = !signedIn;
-  els.editor.placeholder = signedIn ? "SELECT …" : state.authReady ? "Sign in to write a query." : "";
+  editor.setLocked(!signedIn, signedIn ? "SELECT …" : state.authReady ? "Sign in to write a query." : "");
 
   els.run.disabled = !signedIn || running;
   els.runLabel.textContent = running ? "Running…" : "Run";
@@ -940,6 +1475,7 @@ function renderResult() {
   const id = state.currentId;
   const r = state.results[id];
   box.replaceChildren();
+  box.classList.remove("card", "is-card");
   box.classList.toggle("is-stale", !!state.running[id]);
   box.setAttribute("aria-busy", state.running[id] ? "true" : "false");
   if (!state.session || !r) { box.hidden = true; return; }
@@ -950,10 +1486,13 @@ function renderResult() {
     err.setAttribute("role", "alert");
     err.append(el("p", "error-label", "Error"), el("pre", "error-msg", r.error));
     box.append(err);
+    const tips = r.sql ? errorTips(r.sql, r.error) : [];
+    if (tips.length) box.append(feedbackBox(tips));
     return;
   }
 
   const d = r.data;
+  box.classList.add("card", "is-card");
   const head = el("div", "result-head");
   head.append(el("span", "row-count", rowsLabel(d.rows.length)));
   if (d.correct === true) head.append(el("span", "badge badge-ok", "✓ Matches the answer key"));
@@ -964,7 +1503,12 @@ function renderResult() {
   wrap.setAttribute("role", "region");
   wrap.setAttribute("aria-label", "Query result");
   wrap.append(buildTable(d.columns, d.rows));
-  box.append(head, wrap);
+  box.append(head);
+  if (d.correct === false) {
+    const tips = resultTips(currentQuestion(), r.sql || "", d);
+    if (tips.length) box.append(feedbackBox(tips));
+  }
+  box.append(wrap);
 }
 
 function renderAll() {
@@ -983,7 +1527,7 @@ function applySession(session) {
   if (uid !== state.userId) {
     state.userId = uid;
     resetUserData();
-    els.editor.value = "";
+    editor.setValue("");
     if (uid) loadAnswers(uid);
   }
   renderAll();
@@ -1014,7 +1558,7 @@ async function loadAnswers(uid) {
     if (!state.drafts[a.question_id]) state.drafts[a.question_id] = a.sql_text;
   }
   const id = state.currentId;
-  if (id != null && els.editor.value === "" && state.drafts[id]) els.editor.value = state.drafts[id];
+  if (id != null && editor.getValue() === "" && state.drafts[id]) editor.setValue(state.drafts[id]);
   renderNav();
   renderControls();
 }
@@ -1127,7 +1671,7 @@ async function runQuery() {
   if (!q || !state.session || state.running[q.id]) return;
   const id = q.id;
   const epoch = state.epoch;
-  const sql = els.editor.value;
+  const sql = editor.getValue();
   if (!sql.trim()) {
     setResult(id, { error: "Enter a query." });
     return;
@@ -1147,6 +1691,7 @@ async function runQuery() {
   }
   if (epoch !== state.epoch) return;
   state.running[id] = false;
+  outcome.sql = sql;
   setResult(id, outcome);
 }
 
@@ -1155,7 +1700,7 @@ async function saveAnswer() {
   if (!q || !state.session || state.saving[q.id]) return;
   const id = q.id;
   const epoch = state.epoch;
-  const sql_text = els.editor.value;
+  const sql_text = editor.getValue();
   state.saving[id] = true;
   delete state.saveError[id];
   renderControls();
@@ -1206,6 +1751,7 @@ function setTablesOpen(open) {
   els.tablesToggle.setAttribute("aria-expanded", String(open));
   els.tablesBody.hidden = !open;
   els.workspace.classList.toggle("tables-closed", !open);
+  editor.refresh();
 }
 
 function initTablesPanel() {
@@ -1229,26 +1775,11 @@ function initTablesPanel() {
 function wireEvents() {
   els.kbdHint.replaceChildren(el("kbd", "", IS_MAC ? "⌘" : "Ctrl"), " ", el("kbd", "", "Enter"), " to run");
 
-  els.editor.addEventListener("input", () => {
-    const id = state.currentId;
-    if (id == null || !state.session) return;
-    state.drafts[id] = els.editor.value;
-    delete state.saveError[id];
-    renderSaveNote();
-  });
-  els.editor.addEventListener("keydown", (e) => {
-    const mod = e.ctrlKey || e.metaKey;
-    if (mod && e.key === "Enter") { e.preventDefault(); runQuery(); }
-    else if (mod && (e.key === "s" || e.key === "S")) { e.preventDefault(); saveAnswer(); }
-  });
   els.run.addEventListener("click", runQuery);
   els.save.addEventListener("click", saveAnswer);
   els.save.title = `Save (${IS_MAC ? "⌘" : "Ctrl"}+S)`;
   els.signinLink.addEventListener("click", () => openAuth("signin"));
 
-  els.hint.addEventListener("toggle", () => {
-    els.hintSummary.textContent = els.hint.open ? "Hide hint" : "Show hint";
-  });
   els.hintCopy.addEventListener("click", async () => {
     const ok = await copyText(els.hintSql.textContent);
     els.hintCopy.textContent = ok ? "Copied" : "Copy failed";
