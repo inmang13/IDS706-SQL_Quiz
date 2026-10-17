@@ -1,0 +1,24 @@
+name: Database check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 13 * * 1"   # Mondays, keeps the free Supabase project awake
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Check hosted database (read-only role)
+        env:
+          QUIZ_READER_DATABASE_URL: ${{ secrets.QUIZ_READER_DATABASE_URL }}
+        run: python scripts/check_db.py
