@@ -18,6 +18,18 @@ end $$;
 
 grant usage on schema quiz to quiz_reader;
 grant select on all tables in schema quiz to quiz_reader;
+-- Newer Supabase projects switch on row-level security for every new table.
+-- With RLS on and no policy, quiz_reader would see 0 rows (no error), so
+-- give it an explicit read-all policy on each quiz table.
+do $$
+declare t text;
+begin
+    for t in select tablename from pg_tables where schemaname = 'quiz' loop
+        execute format('alter table quiz.%I enable row level security', t);
+        execute format('drop policy if exists quiz_reader_read on quiz.%I', t);
+        execute format('create policy quiz_reader_read on quiz.%I for select to quiz_reader using (true)', t);
+    end loop;
+end $$;
 alter role quiz_reader set search_path = quiz;
 alter role quiz_reader set statement_timeout = '5s';
 alter role quiz_reader set default_transaction_read_only = on;
