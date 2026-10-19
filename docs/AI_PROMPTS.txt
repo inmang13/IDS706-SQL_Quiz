@@ -1,0 +1,354 @@
+AI PROMPT LOG — IDS 706 Assignment 7 (SQL Quiz)
+================================================
+
+SUMMARY
+-------
+Tools and models
+  - Claude, model "claude-opus-5-5" (Claude Opus 5.5), in one long conversation.
+    Used for: choosing the topic, designing the schema, generating the fake
+    data, writing the SQL setup files, the Python scripts, the Supabase Edge
+    Function, the GitHub Actions workflow, the README, and step-by-step setup
+    and debugging help.
+  - Claude Design, for the quiz web page (docs/index.html). The prompts sent to
+    it are in Part 2 below. Claude Design does not show which model it used.
+
+How the work went
+  1. Planning. I pasted the assignment and rubric. I rejected the first topic
+     ideas and an example quiz site I disliked (too much story text, generic
+     topic) and chose a fictional water main breaks and repairs dataset.
+  2. Build. Claude wrote the schema, a fixed-seed data generator, the
+     questions, a read-only database role, row-level security, an append-only
+     hash-chained audit log, a "run-sql" Edge Function, a CI health check, and
+     a README. It computed every expected result by running the expected SQL
+     against a local test database rather than typing results by hand.
+  3. Setup and debugging. I did all account work myself (Supabase, GitHub
+     secrets, deploys, GitHub Pages). Problems fixed along the way:
+       - pasted a file name into the SQL Editor instead of its contents
+       - password mismatch between the database role and the GitHub secret
+       - CI saw 0 rows because Supabase turns on row-level security for new
+         tables; 03_app.sql was updated to add a read policy for the quiz role
+       - pushes went to a non-default branch, so CI didn't start; switched the
+         default branch to main
+       - a local .env edit that hadn't been saved
+  4. Page. I generated the page in Claude Design, then asked for more color,
+     separate collapsed "Expected result" and "Answer (SQL)" sections, and SQL
+     autocomplete.
+  5. Testing. I took the quiz myself and asked why two of my wrong answers
+     failed (whole-number division in Q1, join double-counting in Q3).
+  6. Documentation. README rewrite and this log.
+
+What I did myself
+  Ran every SQL file and command, created all accounts, secrets and
+  deployments, generated and edited the page in Claude Design, tested sign-in
+  and every question on the live site, and reviewed the final files.
+
+Privacy note
+  Personal details (name, email, usernames, local file paths, project IDs,
+  keys, passwords) are replaced with [placeholders]. Pasted terminal and error
+  output is shortened to the relevant lines. One expletive is masked.
+  Otherwise prompts are as typed, typos included.
+
+
+PART 1 — PROMPTS TO CLAUDE (claude-opus-5-5)
+============================================
+
+[1] Assignment instructions
+---------------------------
+This is assignment 7: Imagine you are a TA. You need a short SQL quiz that
+students can take against a real database: they sign in, write a query, run
+it, and see the result.
+
+In the in-class lab you connected Python to Postgres (in Supabase). This
+assignment asks you to build a small system: a hosted database, sign-in,
+automation, and a SQL quiz that runs against live data.
+
+What you must build
+
+All four items are required.
+
+A hosted PostgreSQL database. A free Supabase project is recommended. Another
+hosted Postgres service is acceptable.
+
+Authentication. Use Supabase Auth or similar (like Clerk). Signed-out users
+cannot save a quiz and cannot run a query. Signed-in users may do both.
+
+GitHub Actions with Github Secrets.
+
+A SQL quiz worth 20 points.
+
+You choose the topic. That topic determines what data you insert into the
+database.
+Every question is a SQL question: write a query, or state what a query returns.
+Point values must sum to 20. Five questions at 4 points each is acceptable;
+other splits are acceptable.
+Each question should include a hint: the expected SQL and the expected result.
+A signed-in user must be able to run SQL against the database and see the
+result table.
+Treat this as a TA would: you write the questions; someone else signs in and
+answers them by querying.
+
+Completion
+
+A classmate (or you) can sign in, open a question, enter SQL, run it, and see
+rows from your database.
+GitHub Actions shows a successful run that used the secret. A password must not
+be pasted into the workflow file.
+
+Optional extra credit
+
+Not required.
+
+Queries use parameters rather than f-string SQL (safe from injection).
+An audit log of who ran or saved what.
+An integrity check so the taker role cannot edit that log.
+
+Submission
+
+Submit the URL of your GitHub repository. The repository README must include
+the URL of your quiz site and must be detailed enough for another person to
+understand how the system is set up and how to use it.
+
+Evaluation
+
+All four required items must be present. We mark the quiz by opening a
+question, running SQL, and comparing the result to your hint. Extra credit is
+awarded only if you implemented it. A password committed to git, or Actions
+that never ran, means the system portion is incomplete.
+
+Scoring details are on the Canvas rubric.
+
+Notes
+
+The application connects to Postgres over the network.
+For Supabase, use the Session pooler (not the Direct connection) and
+sslmode=require.
+Keep .env on your machine and listed in .gitignore. CI must read GitHub
+Secrets.
+We assess the result set, not whether the taker reproduced your SQL
+character-for-character.
+
+Build Your Quiz Rubric
+  Hosted database (20 pts): Complete = hosted database, data loaded, quiz
+    clearly reads from it. Partial (10) = hosted database works, small setup
+    quirks are fine. Not done (0) = no hosted database.
+  Authentication (20 pts): Complete = sign-in works and gates save/query.
+    Partial (10) = login exists but does not really restrict anything.
+    Not done (0) = no sign-in.
+  GitHub Actions (20 pts): Complete = green run; uses a secret; no password in
+    the repo. Partial (10) = workflow exists but failed or did not connect.
+    Not done (0) = no Actions.
+  SQL quiz (25 pts): Complete = SQL questions, about 20 points, hints, Run
+    shows live rows. Partial (15) = questions exist but Run is missing or it is
+    not in the database. Not done (0) = no quiz.
+  README (15 pts): Complete = quiz URL plus a usable write-up. Partial (8) =
+    README exists but is thin or missing the URL. Not done (0) = no README.
+
+[2] Answers to Claude's multiple-choice questions
+-------------------------------------------------
+Topic: I like water main breaks and repairs, or maybe led replacements. Can I
+get more options?
+Stack: Streamlit + Supabase (Recommended)
+Extra credit: Audit log, Log integrity check, Parameterized queries
+
+(Claude then offered four water-utility topics and asked a second set of
+questions, which I did not answer.)
+
+[3]
+Here is an example which I f***ing hated: [link to a classmate's example quiz
+site]
+
+[4]
+I hated the topic and the wording was confusing. Lets make a fake water breaks
+and repairs dataset. I have access to supabase. Can you make the dataset and
+schema and give me instructions on how to connect it all? I will use clause
+design for the UI, so maybe a promtp for 2.
+
+(Note: this replaced the earlier Streamlit choice. The page was built in
+Claude Design and hosted on GitHub Pages instead.)
+
+[5] Pasted error from the Supabase SQL Editor
+---------------------------------------------
+Failed to run sql query: ERROR:  42601: syntax error at or near "supabase"
+LINE 1: supabase/01_schema.sql
+
+[6]
+can you elaborate on step 4
+
+[7]
+done elaborate on step 5
+
+[8] Screenshot of the failed GitHub Actions run, showing:
+---------------------------------------------------------
+psycopg2.OperationalError: connection to server at
+"aws-0-us-east-1.pooler.supabase.com" ([IP]), port 5432 failed: FATAL:
+password authentication failed for user "quiz_reader"
+Error: Process completed with exit code 1.
+
+[9] Pasted CI output
+--------------------
+[FAIL] quiz.pressure_zones loaded — 0 rows
+[FAIL] quiz.mains loaded — 0 rows
+[FAIL] quiz.crews loaded — 0 rows
+[FAIL] quiz.breaks loaded — 0 rows
+[FAIL] quiz.repairs loaded — 0 rows
+[PASS] questions total 20 points — 5 questions
+[FAIL] Q1 hint matches live result — 0 rows
+  ... (Q2–Q5 also FAIL with 0 rows; all security checks PASS)
+10 failure(s)
+
+[10] Pasted error
+-----------------
+Failed to run sql query: ERROR:  23505: duplicate key value violates unique
+constraint "pressure_zones_pkey"
+DETAIL:  Key (zone_id)=(1) already exists.
+
+[11]
+in the zip it lookes like you edited all files but 03+app
+
+[12]
+all good. check passes but did not run automatically with push
+
+[13]
+What is this step: 5. Turn on sign-in
+Authentication → Sign In / Providers → Email: enabled. For a class quiz,
+turning off Confirm email lets graders sign up and start right away.
+Authentication → URL Configuration: set Site URL to your quiz site's URL.
+
+[14] Pasted terminal output
+---------------------------
+(.venv) [repo folder]> pip install -r requirements.txt
+  ... Successfully installed psycopg2-binary-2.9.13 python-dotenv-1.2.3
+(.venv) [repo folder]> python scripts/check_db.py
+  ... psycopg2.OperationalError: connection to server at
+  "aws-0-us-east-1.pooler.supabase.com" ([IP]), port 5432 failed: FATAL:
+  password authentication failed for user "quiz_reader"
+
+[15]
+the github action passes. This is my terminal check.
+(.venv) [repo folder]> echo %QUIZ_READER_DATABASE_URL%
+%QUIZ_READER_DATABASE_URL%
+(.venv) [repo folder]> git check-ignore .env
+.env
+
+[16]
+I just forgot to save the file
+
+[17]
+i made teh index.html, where do I add the url?
+
+[18]
+https://[project-ref].supabase.co/rest/v1/?
+
+[19]
+how do I open the site? How to make main default branch and delete master?
+
+[20] Pasted terminal output
+---------------------------
+> git fetch origin
+From https://github.com/[username]/IDS706-SQL_Quiz
+ * [new branch]      NOT-MAIN   -> origin/NOT-MAIN
+> git log origin/main..origin/master --oneline
+(no output)
+
+[21] Pasted terminal output
+---------------------------
+>> git log origin/main..origin/NOT-MAIN --oneline
+From https://github.com/[username]/IDS706-SQL_Quiz
+ - [deleted]         (none)     -> origin/master
+  origin/HEAD -> origin/NOT-MAIN
+  origin/NOT-MAIN
+  origin/main
+
+[22] Pasted terminal output
+---------------------------
+> git push origin --delete NOT-MAIN
+To https://github.com/[username]/IDS706-SQL_Quiz.git
+ ! [remote rejected] NOT-MAIN (refusing to delete the current branch:
+   refs/heads/NOT-MAIN)
+error: failed to push some refs to
+'https://github.com/[username]/IDS706-SQL_Quiz.git'
+
+[23]
+Why doesnt this work for 1) SELECT material, SUM(length_ft/5280) as miles
+FROM mains
+GROUP BY material
+ORDER BY miles DESC
+
+[24]
+some updates I want: more color on the page as a whole. Tables schema is good.
+Separate out expected result and expected SQL (which is the answer not a hint)
+as collapsed dropdowns. If possible, can we add autocomplete?
+
+[25]
+why does this not work for 3? SELECT material, COUNT(break_id) AS breaks,
+ROUND( 100.0*COUNT(break_id)/(SUM(length_ft)/5280.0),1)  AS
+breaks_per_100_miles
+FROM breaks AS b
+JOIN mains as m ON m.main_id = b.main_id
+GROUP BY material
+ORDER BY breaks_per_100_miles DESC
+
+[26]
+Quiz looks great, lets update the README
+
+[27]
+Lets add a textfile with my prompts to AI and the model. Add a general summary
+to the top, remove any personal information
+
+
+PART 2 — PROMPTS TO CLAUDE DESIGN
+=================================
+
+[D1] Initial page prompt
+------------------------
+The full text is in CLAUDE_DESIGN_PROMPT.md in this repository (written with
+Claude, then pasted into Claude Design).
+
+[D2] Follow-up for color, answer sections, and autocomplete
+-----------------------------------------------------------
+Update the quiz page with these changes. Do not change how the page talks to
+Supabase: keep the SUPABASE_URL and SUPABASE_ANON_KEY lines, sign-in, loading
+questions, saving answers, and the run-sql call exactly as they are.
+
+1. More color across the whole page
+- Water-utility palette: deep navy top bar with white text, a light blue-gray
+  page background, white cards for the question and results.
+- Teal or bright blue for primary buttons (Run), a quieter outline style for
+  Save.
+- Colored status in the question list: grey = not started, amber = saved,
+  green = correct. Show the points as a small colored chip.
+- Result table: navy header row, light zebra striping, the ✓ match badge in
+  green and "Not a match yet" in amber.
+- Keep text high-contrast and make sure dark mode still works.
+
+2. Split the hint into two separate collapsed sections, both closed by default,
+   in this order:
+- "Expected result" — the expected result table (from hint_result).
+- "Answer (SQL)" — the expected SQL in a code block with a Copy button. Label
+  it clearly as the answer, not a hint.
+Opening one should not open the other.
+
+3. SQL autocomplete in the editor
+Replace the plain textarea with CodeMirror 5 loaded from cdnjs (no build step):
+- https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js
+  and codemirror.min.css
+- mode/sql/sql.min.js, addon/hint/show-hint.min.js,
+  addon/hint/show-hint.min.css, addon/hint/sql-hint.min.js
+Use mode "text/x-pgsql", line numbers, and syntax highlighting with a theme
+that matches the page.
+Give the SQL hint these tables so it suggests real names:
+  pressure_zones: zone_id, zone_name
+  mains: main_id, zone_id, material, diameter_in, length_ft, install_year
+  crews: crew_id, crew_name, shift
+  breaks: break_id, main_id, reported_at, break_type, cause, est_loss_gal
+  repairs: repair_id, break_id, crew_id, started_at, completed_at,
+           repair_method, cost_usd
+Show suggestions automatically after typing 2+ letters, and also on
+Ctrl+Space. Keep Ctrl/Cmd+Enter = Run.
+When signed out, the editor stays read-only and greyed. Saved answers still
+load into the editor, and Run and Save read the text from CodeMirror.
+
+[D3] Any further prompts typed directly into Claude Design
+----------------------------------------------------------
+[Add any prompts you typed into Claude Design yourself, for example the one
+that added the wrong-answer tips.]
