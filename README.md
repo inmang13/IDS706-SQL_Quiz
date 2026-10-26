@@ -1,10 +1,10 @@
-# Haw Valley Water — SQL Quiz
+# Haw Valley Water — SQL Quiz + RAG
 
 [![Database check](https://github.com/inmang13/IDS706-SQL_Quiz/actions/workflows/db-check.yml/badge.svg)](https://github.com/inmang13/IDS706-SQL_Quiz/actions/workflows/db-check.yml)
 
 **Quiz site: https://inmang13.github.io/IDS706-SQL_Quiz/**
 
-A five-question, 20-point SQL quiz about water main breaks and repairs at a fictional utility, Haw Valley Water. The data is made up, but shaped like a real utility's records: old cast iron breaks far more often than newer pipe, breaks cluster in winter, and a few breaks are still waiting on a crew.
+A five-question, 20-point SQL quiz about water main breaks and repairs at a fictional utility, Haw Valley Water. The site also demonstrates retrieval-augmented generation (RAG): enter a question in plain English to retrieve relevant quiz knowledge from Neo4j and ask Gemini to draft PostgreSQL SQL. Generated SQL is displayed for review; it is not automatically executed.
 
 IDS 706 · Assignment 7 · Grace Inman
 
@@ -17,6 +17,7 @@ IDS 706 · Assignment 7 · Grace Inman
 3. Attempt **Question 1** , and press **Run** (or Ctrl+Enter). I've added auto-complete suggestions so it easier to type. 
 4. You should see live rows from the database and a ✓ if your output matched the expected output. Use the Hints to guide you. Peak at the answer if needed.
 5. Press **Save** (or Ctrl+S), reload the page, and the saved query comes back.
+6. In **Ask in plain English**, enter a question and select **Generate SQL**. Review the retrieved context and generated SQL. To execute a query, copy it into the SQL editor and press **Run** yourself.
 
 Each question has two collapsed sections: **Expected result** (the result table) and **Answer (SQL)** (the expected query). Results are graded by their values, not by matching the SQL text or the column names.
 
@@ -33,6 +34,16 @@ Each question has two collapsed sections: **Expected result** (the result table)
    │                                     │ 2. runs the SQL as read-only role quiz_reader
    │                                     │ 3. compares the result to the answer key
    │                                     │ 4. writes a row to the audit log
+   │  Generate SQL ───────────────────▶ Edge Function "generate-sql"
+   │                                     │ 1. embeds the question with Gemini
+   │                                     │ 2. retrieves the top 4 matching documents from Neo4j
+   │                                     │ 3. asks Gemini to draft PostgreSQL SQL
+   │                                     │ 4. returns SQL and retrieved sources (never executes SQL)
+   │                                     ▼
+   │                             Neo4j AuraDB Free vector index
+   │                             schema, business rules, SQL examples
+   │                                     ▲
+   │                          Gemini embeddings and generation
    ▼                                     ▼
                  Supabase PostgreSQL (hosted)
                  quiz.*         quiz data (takers can only read it)
@@ -45,6 +56,8 @@ Each question has two collapsed sections: **Expected result** (the result table)
 |---|---|
 | Hosted PostgreSQL | Supabase project; quiz data in schema `quiz` (`supabase/01_schema.sql`, `02_seed.sql`) |
 | Authentication | Supabase Auth. Signed-out users have no permission on `answers` and get a 401 from `run-sql`. This is enforced by the database and the server, not only by disabling buttons. |
+| RAG retrieval and generation | `scripts/rag_knowledge.py` defines searchable schema, business rules, and question/SQL examples; `scripts/seed_rag.py` creates Gemini embeddings and indexes them in Neo4j. The `generate-sql` Edge Function retrieves relevant documents and passes them to Gemini. |
+| Server-side secrets | `GEMINI_API_KEY` and Neo4j connection details are Supabase Edge Function secrets. Never put these credentials in `docs/index.html` or commit them. |
 | GitHub Actions + Secrets | `.github/workflows/db-check.yml` connects with the `QUIZ_READER_DATABASE_URL` secret and runs `scripts/check_db.py`. No password appears anywhere in the repo. |
 | 20-point SQL quiz with hints | `public.questions` (`supabase/04_questions.sql`). Each question stores its expected SQL and its expected result table. |
 
@@ -57,10 +70,11 @@ Each question has two collapsed sections: **Expected result** (the result table)
 - **SQL editor** ([CodeMirror](https://codemirror.net/5/)) with syntax highlighting and **autocomplete** for SQL keywords and this database's real table and column names. Suggestions appear as you type; Ctrl+Space opens them on demand.
 - **Shortcuts:** Ctrl/Cmd+Enter runs, Ctrl/Cmd+S saves.
 - **Result table** showing the live rows, the row count, and a ✓ or "Not a match yet" badge. Database errors are shown as-is.
+- **RAG SQL generator** that accepts a natural-language question, shows generated PostgreSQL SQL, and lets users expand the retrieved schema/rules/examples. The generated SQL is not automatically executed.
 - **Tips on wrong answers.** When a query errors or its result doesn't match, the page points at the likely mistake without giving away the answer: a misspelled table or keyword, whole-number division, missing rounding, a join that repeats rows, `WHERE` used where `HAVING` is needed, the wrong number of columns, and similar.
 - **Expected result** and **Answer (SQL)** as separate collapsed sections, closed by default.
 
-The page is a single HTML file with no build step. It uses only the Supabase **publishable** key, which is designed to be public; row-level security and the Edge Function protect the data.
+The page is a single HTML file with no build step. It uses only the Supabase **publishable** key, which is designed to be public; row-level security and the Edge Functions protect the data and credentials.
 
 ---
 
@@ -186,6 +200,31 @@ const SUPABASE_ANON_KEY = "<publishable or anon key>";   // Project Settings →
 **Never** use the `service_role` / secret key or a database password in the page.
 Then **Settings → Pages → Deploy from a branch → `main` → `/docs` → Save**.
 
+### 10. Add free-tier RAG services
+
+The RAG feature uses a Neo4j AuraDB Free instance for vector search and the Gemini API for both embeddings and SQL generation. Free-tier availability, request quotas, and terms can change. Do not send sensitive data to the model API.
+
+1. Create a Neo4j AuraDB Free instance. In its **Connect** panel, copy the `neo4j+s://...` connection URI. Keep the generated password private.
+2. Create a Gemini API key in [Google AI Studio](https://aistudio.google.com/apikey).
+3. Add these lines to your ignored local `.env` file. Keep the existing `QUIZ_READER_DATABASE_URL`; append these variables rather than replacing it:
+   ```
+   NEO4J_URI=neo4j+s://<your-instance-host>
+   NEO4J_USERNAME=neo4j
+   NEO4J_PASSWORD=<your-private-password>
+   GEMINI_API_KEY=<your-private-api-key>
+   ```
+4. Install dependencies and populate Neo4j with actual vector embeddings:
+   ```
+   pip install -r requirements.txt
+   python scripts/seed_rag.py "Which crews have the fastest completed repairs?"
+   ```
+   The command creates the vector index and prints the closest retrieved documents and similarity scores. The default Aura database name is detected automatically for this seeding script.
+5. In **Supabase → Edge Functions → Secrets**, add `GEMINI_API_KEY`, `NEO4J_URI`, `NEO4J_USERNAME`, `NEO4J_PASSWORD`, and `NEO4J_DATABASE`. Set `NEO4J_DATABASE` to the database name printed by `seed_rag.py` (Aura may assign a generated name instead of `neo4j`).
+6. Deploy a new Edge Function named `generate-sql` using `supabase/functions/generate-sql/index.ts`. The function embeds the question, runs a vector similarity search, sends the retrieved context to Gemini, and returns the SQL plus source documents. It does not execute generated SQL.
+7. Publish the updated `docs/index.html` to GitHub Pages. Sign in, ask a question in **Ask in plain English**, and verify that generated SQL and retrieved sources appear.
+
+Never add the Gemini key or Neo4j credentials to GitHub Pages or a committed file. The public browser only invokes the authenticated Supabase Edge Function.
+
 
 ## Repository layout
 
@@ -197,9 +236,12 @@ supabase/
   03_app.sql               app tables, row-level security, read-only role, audit log + integrity check
   04_questions.sql         generated questions + answer key
   functions/run-sql/       Edge Function that runs takers' SQL
+  functions/generate-sql/  Edge Function that retrieves context and generates SQL
 scripts/
   generate_seed.py         makes 02_seed.sql (fixed random seed)
   questions.py             the five questions
+  rag_knowledge.py         schema, business rules, and few-shot RAG documents
+  seed_rag.py              embeds documents, seeds Neo4j, and demonstrates retrieval
   build_questions.py       makes 04_questions.sql by running each expected query
   check_db.py              the CI health check
   quizdb.py                shared run/compare code (same rules as the Edge Function)
@@ -227,3 +269,7 @@ This project was built with AI help: Claude (model `claude-opus-5-5`) for the da
 | Expected result and answer sections | Green GitHub Actions run |
 |---|---|
 | ![Answer sections](docs/screenshots/answer-sections.png) | ![Actions run](docs/screenshots/actions-green.png) |
+
+### RAG assignment screenshot
+
+After deploying the updated page and testing it while signed in, save a screenshot that shows a natural-language question, generated SQL, and retrieved context as `docs/screenshots/rag-generated-sql.png`.

@@ -223,14 +223,16 @@
     padding: 28px 28px 72px;
     column-gap: 32px; row-gap: 20px;
     grid-template-columns: 240px minmax(0, 1fr) 288px;
-    grid-template-rows: auto auto 1fr;
+    grid-template-rows: auto auto auto 1fr;
     grid-template-areas:
       "nav head   tables"
+      "nav rag    tables"
       "nav editor tables"
       "nav output tables";
   }
   .workspace.tables-closed { grid-template-columns: 240px minmax(0, 1fr) auto; }
   .q-head, .q-status { grid-area: head; min-width: 0; }
+  .rag-panel { grid-area: rag; min-width: 0; }
   .q-editor { grid-area: editor; min-width: 0; }
   .q-output { grid-area: output; min-width: 0; display: flex; flex-direction: column; gap: 12px; }
   .card {
@@ -312,6 +314,30 @@
     font: 13.5px/1.5 var(--mono); overflow-wrap: anywhere;
   }
   .q-return-label { color: var(--text-2); }
+
+  /* ---------- RAG SQL generator ---------- */
+  .rag-panel { padding: 20px 24px; }
+  .rag-title { margin: 0; font-size: 17px; font-weight: 650; }
+  .rag-description { margin: 6px 0 14px; color: var(--text-2); font-size: 13.5px; }
+  .rag-form { display: flex; align-items: flex-start; gap: 10px; }
+  .rag-question {
+    display: block; flex: 1; min-width: 0; min-height: 76px; padding: 10px 12px;
+    border: 1px solid var(--border-strong); border-radius: 7px;
+    background: var(--surface); color: var(--text); font-size: 14px; resize: vertical;
+  }
+  .rag-question:focus { outline: none; border-color: var(--primary); box-shadow: var(--ring); }
+  .rag-question:disabled { background: var(--surface-2); color: var(--text-3); }
+  .rag-status { min-height: 1.5em; margin: 9px 0 0; color: var(--text-2); font-size: 13px; }
+  .rag-status.is-error { color: var(--err); }
+  .rag-output { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
+  .rag-output-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .rag-output-title { margin: 0; font-size: 14px; font-weight: 650; }
+  .rag-note { margin: 6px 0 10px; color: var(--text-2); font-size: 12.5px; }
+  .rag-sources { margin: 12px 0 0; padding-left: 20px; color: var(--text-2); font-size: 12.5px; }
+  .rag-sources li + li { margin-top: 5px; }
+  .rag-source-score { color: var(--text-3); font-variant-numeric: tabular-nums; }
+  .rag-retrieved { margin-top: 10px; }
+  .rag-retrieved summary { color: var(--primary-text); font-size: 13px; font-weight: 600; cursor: pointer; }
 
   /* ---------- Editor (CodeMirror; the textarea is the fallback) ---------- */
   .editor {
@@ -542,8 +568,8 @@
     .workspace, .workspace.tables-closed {
       padding: 24px 24px 64px; column-gap: 24px;
       grid-template-columns: 210px minmax(0, 1fr);
-      grid-template-rows: auto auto auto 1fr;
-      grid-template-areas: "nav head" "nav editor" "nav tables" "nav output";
+      grid-template-rows: auto auto auto auto 1fr;
+      grid-template-areas: "nav head" "nav rag" "nav editor" "nav tables" "nav output";
     }
     .tables { position: static; max-height: none; }
   }
@@ -565,7 +591,7 @@
       padding: 0 16px 56px; row-gap: 16px;
       grid-template-columns: minmax(0, 1fr);
       grid-template-rows: none;
-      grid-template-areas: "nav" "head" "editor" "tables" "output";
+      grid-template-areas: "nav" "head" "rag" "editor" "tables" "output";
     }
     .qnav {
       top: var(--topbar-h); z-index: 10;
@@ -583,6 +609,9 @@
     .qn-title, .qn-pts, .legend { display: none; }
     .qbtn[aria-current="true"] { border-color: var(--primary); background: var(--primary-soft); box-shadow: none; }
     .q-head { padding: 16px; scroll-margin-top: calc(var(--topbar-h) + 70px); }
+    .rag-panel { padding: 16px; }
+    .rag-form { flex-direction: column; }
+    .rag-form .btn { align-self: flex-start; }
     .q-title { font-size: 20px; }
     .q-prompt { font-size: 15.5px; }
     .editor, .CodeMirror { height: 200px; font-size: 16px; }
@@ -649,6 +678,33 @@
     </div>
     <p class="q-prompt" id="q-prompt"></p>
     <p class="q-return"><span class="q-return-label">Return:</span> <span id="q-return"></span></p>
+  </section>
+
+  <section class="rag-panel card" id="rag-panel" aria-labelledby="rag-title" hidden>
+    <h2 class="rag-title" id="rag-title">Ask in plain English</h2>
+    <p class="rag-description">The app searches quiz knowledge, then asks Gemini to draft PostgreSQL SQL. The draft is not run.</p>
+    <form class="rag-form" id="rag-form">
+      <label class="sr-only" for="rag-question">Natural-language SQL question</label>
+      <textarea class="rag-question" id="rag-question" rows="2" maxlength="1200"
+        placeholder="For example: Which crews have the fastest completed repairs?"
+        disabled></textarea>
+      <button type="submit" class="btn btn-primary" id="rag-generate" disabled>
+        <span id="rag-generate-label">Generate SQL</span>
+      </button>
+    </form>
+    <p class="rag-status" id="rag-status" role="status" aria-live="polite"></p>
+    <div class="rag-output" id="rag-output" hidden>
+      <div class="rag-output-head">
+        <h3 class="rag-output-title">Generated SQL</h3>
+        <button type="button" class="btn btn-sm btn-outline" id="rag-copy">Copy SQL</button>
+      </div>
+      <p class="rag-note">Review the query before using it. It has not been executed or validated.</p>
+      <pre class="code" id="rag-sql"></pre>
+      <details class="rag-retrieved">
+        <summary id="rag-sources-summary">Retrieved context</summary>
+        <ol class="rag-sources" id="rag-sources"></ol>
+      </details>
+    </div>
   </section>
 
   <section class="q-editor" id="q-editor" aria-label="Your query" hidden>
@@ -769,7 +825,8 @@ const els = {
   workspace: $("workspace"),
   scoreWrap: $("score-wrap"), score: $("score"), account: $("account"),
   flash: $("flash"), flashText: $("flash-text"), flashClose: $("flash-close"),
-  status: $("q-status"), head: $("q-head"), editorSec: $("q-editor"), output: $("q-output"),
+  status: $("q-status"), head: $("q-head"), ragPanel: $("rag-panel"),
+  editorSec: $("q-editor"), output: $("q-output"),
   qlist: $("qlist"),
   qNum: $("q-num"), qTitle: $("q-title-text"), qPoints: $("q-points"),
   qPrompt: $("q-prompt"), qReturn: $("q-return"),
@@ -777,6 +834,10 @@ const els = {
   run: $("run"), runIcon: $("run-icon"), runLabel: $("run-label"),
   save: $("save"), saveNote: $("save-note"),
   signinNote: $("signin-note"), signinLink: $("signin-link"), kbdHint: $("kbd-hint"),
+  ragForm: $("rag-form"), ragQuestion: $("rag-question"), ragGenerate: $("rag-generate"),
+  ragGenerateLabel: $("rag-generate-label"), ragStatus: $("rag-status"),
+  ragOutput: $("rag-output"), ragCopy: $("rag-copy"), ragSql: $("rag-sql"),
+  ragSourcesSummary: $("rag-sources-summary"), ragSources: $("rag-sources"),
   result: $("result"), srStatus: $("sr-status"),
   revealResult: $("reveal-result"), revealAnswer: $("reveal-answer"),
   hintSql: $("hint-sql"), hintCopy: $("hint-copy"), hintRows: $("hint-rows"), hintTable: $("hint-table"),
@@ -816,6 +877,10 @@ const state = {
   running: {},
   results: {},        // question id -> { data } | { error }
   correct: {},        // question id -> true if the latest Run matched
+  ragBusy: false,
+  ragRequestId: 0,
+  ragError: "",
+  ragResult: null,
 };
 const navButtons = new Map();
 
@@ -888,7 +953,7 @@ function showFlash(message) {
 
 function showStatus(kind, message) {
   const ready = kind === null;
-  els.head.hidden = els.editorSec.hidden = els.output.hidden = !ready;
+  els.head.hidden = els.ragPanel.hidden = els.editorSec.hidden = els.output.hidden = !ready;
   els.status.hidden = ready;
   els.status.replaceChildren();
   if (ready) editor.refresh();
@@ -1452,6 +1517,57 @@ function renderControls() {
   els.signinNote.hidden = !state.authReady || signedIn || !supabase;
   els.kbdHint.hidden = !signedIn;
   renderSaveNote();
+  renderGeneration();
+}
+
+function renderGeneration() {
+  const signedIn = !!state.session;
+  els.ragQuestion.disabled = !signedIn || state.ragBusy;
+  els.ragGenerate.disabled = !signedIn || state.ragBusy;
+  els.ragGenerateLabel.textContent = state.ragBusy ? "Generating…" : "Generate SQL";
+  const spinner = els.ragGenerate.querySelector(".spinner");
+  if (state.ragBusy && !spinner) els.ragGenerate.prepend(el("span", "spinner"));
+  if (!state.ragBusy && spinner) spinner.remove();
+
+  els.ragStatus.classList.toggle("is-error", !!state.ragError);
+  if (!state.authReady) {
+    els.ragStatus.textContent = "Checking sign-in status…";
+  } else if (!signedIn) {
+    els.ragStatus.textContent = "Sign in to generate SQL.";
+  } else if (state.ragBusy) {
+    els.ragStatus.textContent = "Searching quiz knowledge and drafting SQL…";
+  } else if (state.ragError) {
+    els.ragStatus.textContent = `Couldn't generate SQL: ${state.ragError}`;
+  } else if (state.ragResult) {
+    els.ragStatus.textContent =
+      `Generated a draft using ${state.ragResult.retrieved.length} retrieved knowledge items.`;
+  } else {
+    els.ragStatus.textContent = "Your question is matched to relevant schema, rules, and examples.";
+  }
+
+  els.ragOutput.hidden = !state.ragResult;
+  els.ragCopy.disabled = !state.ragResult;
+  if (!state.ragResult) {
+    els.ragSql.textContent = "";
+    els.ragSources.replaceChildren();
+    return;
+  }
+
+  els.ragSql.textContent = state.ragResult.sql;
+  els.ragSourcesSummary.textContent = `Retrieved context (${state.ragResult.retrieved.length})`;
+  const sourcesOpen = els.ragSources.parentElement.open;
+  els.ragSources.replaceChildren();
+  for (const source of state.ragResult.retrieved) {
+    const item = el("li");
+    const details = document.createElement("details");
+    const summary = document.createElement("summary");
+    summary.textContent = `${source.title} · ${source.kind} · similarity ${source.score.toFixed(3)}`;
+    const text = el("p", "rag-note", source.text);
+    details.append(summary, text);
+    item.append(details);
+    els.ragSources.append(item);
+  }
+  els.ragSources.parentElement.open = sourcesOpen;
 }
 
 function renderSaveNote() {
@@ -1535,6 +1651,11 @@ function applySession(session) {
 
 function resetUserData() {
   state.epoch++;
+  state.ragRequestId++;
+  state.ragBusy = false;
+  state.ragError = "";
+  state.ragResult = null;
+  els.ragQuestion.value = "";
   for (const key of ["drafts", "saved", "savedAt", "saving", "saveError", "running", "results", "correct"]) {
     state[key] = {};
   }
@@ -1637,7 +1758,7 @@ async function submitAuth(e) {
 }
 
 // ---------- run & save ----------
-async function invokeErrorMessage(error) {
+async function invokeErrorMessage(error, fallback = "Something went wrong running the query.") {
   try {
     const ctx = error.context;
     if (ctx && typeof ctx.json === "function") {
@@ -1647,7 +1768,7 @@ async function invokeErrorMessage(error) {
   } catch {
     // Not a JSON reply (network or CORS failure): fall back to the client's message.
   }
-  return error?.message || "Something went wrong running the query.";
+  return error?.message || fallback;
 }
 
 function setResult(id, outcome) {
@@ -1664,6 +1785,61 @@ function setResult(id, outcome) {
   renderResult();
   renderNav();
   renderScore();
+}
+
+async function generateSql(e) {
+  e.preventDefault();
+  if (!state.session || state.ragBusy) {
+    if (!state.session) openAuth("signin");
+    return;
+  }
+
+  const question = els.ragQuestion.value.trim();
+  if (!question) {
+    state.ragError = "Enter a natural-language question.";
+    renderGeneration();
+    els.ragQuestion.focus();
+    return;
+  }
+
+  const epoch = state.epoch;
+  const requestId = ++state.ragRequestId;
+  state.ragBusy = true;
+  state.ragError = "";
+  state.ragResult = null;
+  renderGeneration();
+
+  try {
+    const { data, error } = await supabase.functions.invoke("generate-sql", {
+      body: { question },
+    });
+    if (error) {
+      throw new Error(await invokeErrorMessage(error, "Something went wrong generating SQL."));
+    }
+    if (
+      !data ||
+      typeof data.sql !== "string" ||
+      !Array.isArray(data.retrieved) ||
+      data.retrieved.length === 0 ||
+      data.retrieved.some((source) =>
+        !source ||
+        typeof source.title !== "string" ||
+        typeof source.kind !== "string" ||
+        typeof source.text !== "string" ||
+        typeof source.score !== "number"
+      )
+    ) {
+      throw new Error("Unexpected reply from generate-sql.");
+    }
+    if (epoch !== state.epoch || requestId !== state.ragRequestId) return;
+    state.ragResult = { sql: data.sql, retrieved: data.retrieved };
+  } catch (error) {
+    if (epoch !== state.epoch || requestId !== state.ragRequestId) return;
+    state.ragError = error instanceof Error ? error.message : String(error);
+  }
+
+  state.ragBusy = false;
+  renderGeneration();
 }
 
 async function runQuery() {
@@ -1777,6 +1953,13 @@ function wireEvents() {
 
   els.run.addEventListener("click", runQuery);
   els.save.addEventListener("click", saveAnswer);
+  els.ragForm.addEventListener("submit", generateSql);
+  els.ragCopy.addEventListener("click", async () => {
+    if (!state.ragResult) return;
+    const ok = await copyText(state.ragResult.sql);
+    els.ragCopy.textContent = ok ? "Copied" : "Copy failed";
+    setTimeout(() => { els.ragCopy.textContent = "Copy SQL"; }, 1500);
+  });
   els.save.title = `Save (${IS_MAC ? "⌘" : "Ctrl"}+S)`;
   els.signinLink.addEventListener("click", () => openAuth("signin"));
 
